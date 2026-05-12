@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -65,6 +66,7 @@ public static class GitHubPagesWebGLBuild
         }
 
         PostProcessBuild(pathToBuiltProject);
+        SyncToGitHubPagesBuild(pathToBuiltProject);
     }
 
     private static void ConfigureWebGLForGitHubPages()
@@ -95,9 +97,46 @@ public static class GitHubPagesWebGLBuild
         DeletePrecompressedFiles(buildPath);
     }
 
+    private static void SyncToGitHubPagesBuild(string sourcePath)
+    {
+        var absoluteSourcePath = Path.GetFullPath(sourcePath);
+        var absoluteOutputPath = Path.GetFullPath(OutputDirectory);
+
+        if (string.Equals(absoluteSourcePath, absoluteOutputPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (Directory.Exists(absoluteOutputPath))
+        {
+            Directory.Delete(absoluteOutputPath, true);
+        }
+
+        CopyDirectory(absoluteSourcePath, absoluteOutputPath);
+        PostProcessBuild(absoluteOutputPath);
+
+        Debug.Log($"Copied WebGL build to GitHub Pages output: {absoluteOutputPath}");
+    }
+
+    private static void CopyDirectory(string sourcePath, string destinationPath)
+    {
+        Directory.CreateDirectory(destinationPath);
+
+        foreach (var directory in Directory.EnumerateDirectories(sourcePath, "*", SearchOption.AllDirectories))
+        {
+            Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
+        }
+
+        foreach (var file in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
+        {
+            File.Copy(file, file.Replace(sourcePath, destinationPath), true);
+        }
+    }
+
     private static void PatchIndex(string indexPath)
     {
         var html = File.ReadAllText(indexPath);
+        var buildVersion = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
 
         html = html
             .Replace("/build.data.br", "/build.data")
@@ -106,6 +145,29 @@ public static class GitHubPagesWebGLBuild
             .Replace("/build.data.gz", "/build.data")
             .Replace("/build.framework.js.gz", "/build.framework.js")
             .Replace("/build.wasm.gz", "/build.wasm");
+
+        html = Regex.Replace(
+            html,
+            @"\s*var buildVersion = ""[^""]+"";\s*\n\s*var loaderUrl = buildUrl \+ ""/build\.loader\.js(?:\?v="" \+ buildVersion)?"";",
+            string.Empty
+        );
+
+        html = html.Replace(
+            "var loaderUrl = buildUrl + \"/build.loader.js\";",
+            $"var buildVersion = \"{buildVersion}\";\n      var loaderUrl = buildUrl + \"/build.loader.js?v=\" + buildVersion;"
+        );
+
+        html = Regex.Replace(
+            html,
+            @"buildUrl \+ ""/(build\.data|build\.framework\.js|build\.wasm)(?:""|\?v="" \+ buildVersion)",
+            "buildUrl + \"/$1?v=\" + buildVersion"
+        );
+
+        html = Regex.Replace(
+            html,
+            @"productVersion: ""[^""]+""",
+            $"productVersion: \"{buildVersion}\""
+        );
 
         File.WriteAllText(indexPath, html);
     }
