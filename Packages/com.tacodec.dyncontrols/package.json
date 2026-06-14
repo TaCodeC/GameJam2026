@@ -1,0 +1,35 @@
+{
+  "name": "com.tacodec.dyncontrols",
+  "version": "0.1.0",
+  "displayName": "DynControls",
+  "description": "Reusable on-screen controls for Unity, including virtual joysticks, action buttons, pointer surfaces, and mobile-device detection.",
+  "unity": "6000.0",
+  "unityRelease": "0f1",
+  "dependencies": {
+    "com.unity.ugui": "2.0.0"
+  },
+  "keywords": [
+    "input",
+    "mobile",
+    "touch",
+    "joystick",
+    "controls",
+    "pointer"
+  ],
+  "author": {
+    "name": "TaCodeC",
+    "email": "tacodecrt@gmail.com"
+  },
+  "samples": [
+    {
+      "displayName": "Basic Controls",
+      "description": "Shows how to read a virtual joystick and action button without coupling them to gameplay.",
+      "path": "Samples~/BasicControls"
+    },
+    {
+      "displayName": "Pointer Surface",
+      "description": "Shows a small mouse-and-touch drag interaction using PointerSurface.",
+      "path": "Samples~/PointerSurface"
+    }
+  ]
+}

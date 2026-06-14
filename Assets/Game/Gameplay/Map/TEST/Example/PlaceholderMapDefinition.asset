@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4923eb3dd2f9d4e9799d3b3b7974f095, type: 3}
+  m_Name: PlaceholderMapDefinition
+  m_EditorClassIdentifier: GameJam.MapDiscovery::GameJam.Gameplay.Map.MapDefinition
+  _traversableMask: {fileID: 2800000, guid: 637a19e39b4014d859b6eae13c9f1fd7, type: 3}
+  _maskChannel: 0
+  _walkableThreshold: 0.5
+  _worldPlane: 0
+  _worldSize: {x: 192.844, y: 106.74}
+  _flipWorldX: 1
+  _flipWorldY: 1
+  _discoveryResolution: {x: 512, y: 288}

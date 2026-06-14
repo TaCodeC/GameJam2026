@@ -1,5 +1,13 @@
 {
   "dependencies": {
+    "com.tacodec.dyncontrols": {
+      "version": "file:com.tacodec.dyncontrols",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.ugui": "2.0.0"
+      }
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.10",
       "depth": 0,
