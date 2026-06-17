@@ -104,3 +104,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Local-only player animation rebuild helper
+/Assets/Game/Player/Editor.meta
+/Assets/Game/Player/Editor/PlayerAnimationAssetBuilder.cs
+/Assets/Game/Player/Editor/PlayerAnimationAssetBuilder.cs.meta
