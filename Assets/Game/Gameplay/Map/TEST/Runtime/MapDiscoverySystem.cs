@@ -11,6 +11,8 @@ namespace GameJam.Gameplay.Map
 
         [Header("Tracking")]
         [SerializeField] private Transform _trackedTransform;
+        [SerializeField] private bool _autoFindTrackedTransform = true;
+        [SerializeField] private string _trackedTransformObjectName = "Player";
         [SerializeField, Min(0.01f)] private float _revealRadius = 1.25f;
         [SerializeField, Min(0.01f)] private float _visitedRadius = 0.15f;
         [Tooltip("Maximum distance between paint stamps. Smaller values produce smoother paths.")]
@@ -29,6 +31,7 @@ namespace GameJam.Gameplay.Map
         private int _visitedCellCount;
         private bool _hasLastTrackedPosition;
         private bool _initialized;
+        private bool _warnedMissingTrackedTransform;
         private bool _warnedTrackedTransformOutsideMap;
 
         public event Action MapChanged;
@@ -44,13 +47,20 @@ namespace GameJam.Gameplay.Map
         private void Awake()
         {
             Initialize();
+            ResolveTrackedTransformIfNeeded();
         }
 
         private void Update()
         {
+            ResolveTrackedTransformIfNeeded();
+
             if (_trackedTransform != null)
             {
                 RecordPosition(_trackedTransform.position);
+            }
+            else
+            {
+                WarnMissingTrackedTransform();
             }
         }
 
@@ -74,6 +84,7 @@ namespace GameJam.Gameplay.Map
         {
             _trackedTransform = trackedTransform;
             _hasLastTrackedPosition = false;
+            _warnedMissingTrackedTransform = false;
             _warnedTrackedTransformOutsideMap = false;
         }
 
@@ -432,6 +443,36 @@ namespace GameJam.Gameplay.Map
         private static float SafeFraction(int value, int total)
         {
             return total > 0 ? value / (float)total : 0f;
+        }
+
+        private void ResolveTrackedTransformIfNeeded()
+        {
+            if (_trackedTransform != null ||
+                !_autoFindTrackedTransform ||
+                string.IsNullOrWhiteSpace(_trackedTransformObjectName))
+            {
+                return;
+            }
+
+            GameObject trackedObject = GameObject.Find(_trackedTransformObjectName);
+            if (trackedObject != null)
+            {
+                SetTrackedTransform(trackedObject.transform);
+            }
+        }
+
+        private void WarnMissingTrackedTransform()
+        {
+            if (_warnedMissingTrackedTransform)
+            {
+                return;
+            }
+
+            _warnedMissingTrackedTransform = true;
+            Debug.LogWarning(
+                $"{nameof(MapDiscoverySystem)} on {name} has no tracked transform, so discovery will not advance. " +
+                $"Assign the player or leave auto-find enabled with an object named '{_trackedTransformObjectName}'.",
+                this);
         }
 
         private void WarnTrackedTransformOutsideMap(Vector3 worldPosition)

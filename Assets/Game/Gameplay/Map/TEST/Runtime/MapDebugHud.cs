@@ -305,8 +305,19 @@ namespace GameJam.Gameplay.Map
 
         private void UpdatePlayerMarker()
         {
-            if (_playerMarker == null || _discovery == null || _player == null)
+            if (_playerMarker == null || _discovery == null)
             {
+                return;
+            }
+
+            if (_player == null)
+            {
+                _player = _discovery.TrackedTransform;
+            }
+
+            if (_player == null)
+            {
+                _playerMarker.gameObject.SetActive(false);
                 return;
             }
 
