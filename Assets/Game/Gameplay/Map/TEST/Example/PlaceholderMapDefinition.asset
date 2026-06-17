@@ -17,6 +17,6 @@ MonoBehaviour:
   _walkableThreshold: 0.5
   _worldPlane: 0
   _worldSize: {x: 192.844, y: 106.74}
-  _flipWorldX: 1
-  _flipWorldY: 1
+  _flipWorldX: 0
+  _flipWorldY: 0
   _discoveryResolution: {x: 512, y: 288}
