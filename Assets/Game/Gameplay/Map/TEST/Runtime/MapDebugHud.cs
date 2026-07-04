@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,34 +7,50 @@ namespace GameJam.Gameplay.Map
     [DisallowMultipleComponent]
     public sealed class MapDebugHud : MonoBehaviour
     {
-        private const float PanelPadding = 8f;
-        private const float LabelHeight = 28f;
+        private const string MinigameInteractableTypeName = "GameJam.Gameplay.Minigames.MinigameInteractableObject";
 
         [Header("Sources")]
         [SerializeField] private MapDiscoverySystem _discovery;
         [Tooltip("Defaults to the transform tracked by MapDiscoverySystem.")]
         [SerializeField] private Transform _player;
+        [Tooltip("Visual texture used only by this UI map. Leave empty to reveal the traversable mask.")]
+        [SerializeField] private Texture _mapTextureOverride;
+        [SerializeField] private Sprite _openButtonSprite;
 
         [Header("Layout")]
-        [SerializeField] private Vector2 _mapPanelSize = new Vector2(360f, 203f);
+        [SerializeField] private Vector2 _mapPanelSize = new Vector2(1500f, 842f);
         [SerializeField] private bool _preserveMapAspectRatio = true;
         [SerializeField, Min(0f)] private float _screenMargin = 20f;
+        [SerializeField] private Vector2 _openButtonSize = new Vector2(92f, 92f);
+        [SerializeField] private Vector2 _closeButtonSize = new Vector2(64f, 64f);
         [SerializeField] private int _sortingOrder = 1000;
+        [SerializeField] private bool _pauseGameWhenOpen = true;
 
         [Header("Appearance")]
-        [SerializeField, Min(1f)] private float _playerMarkerDiameter = 12f;
+        [SerializeField, Min(1f)] private float _playerMarkerDiameter = 14f;
         [SerializeField] private Color _playerMarkerColor = Color.red;
-        [SerializeField] private Color _panelBackgroundColor = new Color(0.04f, 0.04f, 0.04f, 0.9f);
+        [SerializeField, Min(1f)] private float _minigameMarkerDiameter = 12f;
+        [SerializeField] private Color _minigameMarkerColor = new Color(1f, 0.48f, 0.05f, 1f);
+        [SerializeField] private Color _panelBackgroundColor = new Color(0f, 0f, 0f, 0.78f);
         [SerializeField] private Color _labelColor = Color.white;
+        [SerializeField] private Color _buttonFallbackColor = new Color(0.1f, 0.09f, 0.05f, 0.9f);
+        [SerializeField] private bool _includeInactiveMinigames;
+        [SerializeField, Min(0.1f)] private float _minigameMarkerRefreshInterval = 1f;
 
+        private readonly List<MinigameMarker> _minigameMarkers = new();
         private GameObject _hudRoot;
-        private RawImage _realMapImage;
-        private RawImage _discoveredMapImage;
+        private GameObject _mapOverlay;
+        private RawImage _mapImage;
+        private MapDiscoveryView _mapDiscoveryView;
+        private RectTransform _markerRoot;
         private RectTransform _playerMarker;
-        private Text _realPositionLabel;
+        private Button _openButton;
         private Text _discoveryLabel;
         private Texture2D _markerTexture;
         private Sprite _markerSprite;
+        private float _nextMinigameMarkerRefreshTime;
+        private float _previousTimeScale = 1f;
+        private bool _mapOpen;
 
         public GameObject HudRoot => _hudRoot;
 
@@ -53,6 +70,7 @@ namespace GameJam.Gameplay.Map
             }
 
             ApplyMapAspectRatio();
+            ConfigureDiscoveryView();
             RefreshMapSource();
         }
 
@@ -60,10 +78,60 @@ namespace GameJam.Gameplay.Map
         {
             ResolveSources();
             BuildHud();
+            ApplyMapAspectRatio();
+            ConfigureDiscoveryView();
             RefreshMapSource();
-            UpdatePreviewRotation();
-            UpdatePlayerMarker();
+            RefreshMinigameMarkers(true);
+            UpdateMarkers();
             UpdateLabels();
+        }
+
+        public void OpenMap()
+        {
+            if (_mapOpen)
+            {
+                return;
+            }
+
+            BuildHud();
+            _mapOpen = true;
+
+            if (_pauseGameWhenOpen)
+            {
+                _previousTimeScale = Time.timeScale;
+                Time.timeScale = 0f;
+            }
+
+            if (_mapOverlay != null)
+            {
+                _mapOverlay.SetActive(true);
+            }
+
+            ConfigureDiscoveryView();
+            RefreshMapSource();
+            RefreshMinigameMarkers(true);
+            UpdateMarkers();
+            UpdateLabels();
+        }
+
+        public void CloseMap()
+        {
+            if (!_mapOpen)
+            {
+                return;
+            }
+
+            _mapOpen = false;
+
+            if (_pauseGameWhenOpen)
+            {
+                Time.timeScale = _previousTimeScale;
+            }
+
+            if (_mapOverlay != null)
+            {
+                _mapOverlay.SetActive(false);
+            }
         }
 
         private void OnEnable()
@@ -77,12 +145,18 @@ namespace GameJam.Gameplay.Map
         private void Start()
         {
             Initialize();
+            CloseMap();
         }
 
         private void Update()
         {
-            UpdatePreviewRotation();
-            UpdatePlayerMarker();
+            if (!_mapOpen)
+            {
+                return;
+            }
+
+            RefreshMinigameMarkers(false);
+            UpdateMarkers();
             UpdateLabels();
         }
 
@@ -92,10 +166,17 @@ namespace GameJam.Gameplay.Map
             {
                 _discovery.MapChanged -= RefreshMapSource;
             }
+
+            if (_mapOpen)
+            {
+                CloseMap();
+            }
         }
 
         private void OnDestroy()
         {
+            ClearMinigameMarkers();
+
             if (_hudRoot != null)
             {
                 DestroyRuntimeObject(_hudRoot);
@@ -140,8 +221,7 @@ namespace GameJam.Gameplay.Map
                 return;
             }
 
-            // Si, todo este HUD se arma por codigo. No pregunten.
-            _hudRoot = new GameObject("Map Debug HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+            _hudRoot = new GameObject("Map HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
 
             Canvas canvas = _hudRoot.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -153,94 +233,184 @@ namespace GameJam.Gameplay.Map
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
 
-            RawImage realMap = CreatePanel(
-                "Real Position Map",
-                new Vector2(0f, 1f),
-                new Vector2(0f, 1f),
-                new Vector2(_screenMargin, -_screenMargin),
-                out _realPositionLabel);
-            _realMapImage = realMap;
-            _playerMarker = CreateMarker(realMap.rectTransform);
-
-            RawImage discoveredMap = CreatePanel(
-                "Discovered Map",
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(-_screenMargin, -_screenMargin),
-                out _discoveryLabel);
-            _discoveredMapImage = discoveredMap;
-
-            MapDiscoveryView discoveryView = discoveredMap.gameObject.AddComponent<MapDiscoveryView>();
-            discoveryView.Configure(_discovery, discoveredMap);
+            CreateOverlay(_hudRoot.transform);
+            CreateOpenButton(_hudRoot.transform);
         }
 
-        private RawImage CreatePanel(
-            string panelName,
-            Vector2 anchor,
-            Vector2 pivot,
-            Vector2 anchoredPosition,
-            out Text label)
+        private void CreateOverlay(Transform parent)
         {
-            Vector2 panelSize = new Vector2(
-                _mapPanelSize.x + PanelPadding * 2f,
-                _mapPanelSize.y + PanelPadding * 2f + LabelHeight);
+            _mapOverlay = new GameObject("Map Overlay", typeof(RectTransform), typeof(Image));
+            _mapOverlay.transform.SetParent(parent, false);
 
-            GameObject panelObject = new GameObject(panelName, typeof(RectTransform), typeof(Image));
-            panelObject.transform.SetParent(_hudRoot.transform, false);
+            RectTransform overlayRect = _mapOverlay.GetComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.pivot = new Vector2(0.5f, 0.5f);
+            overlayRect.anchoredPosition = Vector2.zero;
+            overlayRect.sizeDelta = Vector2.zero;
 
-            RectTransform panelRect = panelObject.GetComponent<RectTransform>();
-            panelRect.anchorMin = anchor;
-            panelRect.anchorMax = anchor;
-            panelRect.pivot = pivot;
-            panelRect.anchoredPosition = anchoredPosition;
-            panelRect.sizeDelta = panelSize;
+            Image overlayImage = _mapOverlay.GetComponent<Image>();
+            overlayImage.color = _panelBackgroundColor;
+            overlayImage.raycastTarget = true;
 
-            Image background = panelObject.GetComponent<Image>();
-            background.color = _panelBackgroundColor;
-            background.raycastTarget = false;
+            RectTransform mapFrame = CreateMapFrame(_mapOverlay.transform);
+            _mapImage = CreateMapImage(mapFrame);
+            _mapDiscoveryView = _mapImage.gameObject.AddComponent<MapDiscoveryView>();
+            _markerRoot = CreateMarkerRoot(_mapImage.rectTransform);
+            _playerMarker = CreateMarker(_markerRoot, "Player Position", _playerMarkerDiameter, _playerMarkerColor);
+            _discoveryLabel = CreateLabel(_mapOverlay.transform);
+            CreateCloseButton(_mapOverlay.transform);
 
-            GameObject mapObject = new GameObject("Map", typeof(RectTransform), typeof(RawImage));
-            mapObject.transform.SetParent(panelObject.transform, false);
+            _mapOverlay.SetActive(false);
+        }
+
+        private RectTransform CreateMapFrame(Transform parent)
+        {
+            GameObject frameObject = new GameObject("Map Frame", typeof(RectTransform));
+            frameObject.transform.SetParent(parent, false);
+
+            RectTransform frameRect = frameObject.GetComponent<RectTransform>();
+            frameRect.anchorMin = new Vector2(0.5f, 0.5f);
+            frameRect.anchorMax = new Vector2(0.5f, 0.5f);
+            frameRect.pivot = new Vector2(0.5f, 0.5f);
+            frameRect.anchoredPosition = Vector2.zero;
+            frameRect.sizeDelta = _mapPanelSize;
+            return frameRect;
+        }
+
+        private RawImage CreateMapImage(RectTransform parent)
+        {
+            GameObject mapObject = new GameObject("Discovered Map", typeof(RectTransform), typeof(RawImage));
+            mapObject.transform.SetParent(parent, false);
 
             RectTransform mapRect = mapObject.GetComponent<RectTransform>();
-            mapRect.anchorMin = new Vector2(0.5f, 1f);
-            mapRect.anchorMax = new Vector2(0.5f, 1f);
+            mapRect.anchorMin = Vector2.zero;
+            mapRect.anchorMax = Vector2.one;
             mapRect.pivot = new Vector2(0.5f, 0.5f);
-            mapRect.anchoredPosition = new Vector2(0f, -PanelPadding - _mapPanelSize.y * 0.5f);
-            mapRect.sizeDelta = _mapPanelSize;
+            mapRect.anchoredPosition = Vector2.zero;
+            mapRect.sizeDelta = Vector2.zero;
 
             RawImage mapImage = mapObject.GetComponent<RawImage>();
             mapImage.color = Color.white;
             mapImage.raycastTarget = false;
-
-            label = CreateLabel(panelObject.transform);
             return mapImage;
+        }
+
+        private void CreateOpenButton(Transform parent)
+        {
+            GameObject buttonObject = new GameObject("Open Map Button", typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+
+            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+            buttonRect.anchorMin = Vector2.zero;
+            buttonRect.anchorMax = Vector2.zero;
+            buttonRect.pivot = Vector2.zero;
+            buttonRect.anchoredPosition = new Vector2(_screenMargin, _screenMargin);
+            buttonRect.sizeDelta = _openButtonSize;
+
+            Image buttonImage = buttonObject.GetComponent<Image>();
+            buttonImage.sprite = _openButtonSprite;
+            buttonImage.preserveAspect = true;
+            buttonImage.color = _openButtonSprite != null ? Color.white : _buttonFallbackColor;
+
+            _openButton = buttonObject.GetComponent<Button>();
+            _openButton.onClick.AddListener(ToggleMap);
+        }
+
+        private void CreateCloseButton(Transform parent)
+        {
+            Button closeButton = CreateTextButton(
+                "Close Map Button",
+                parent,
+                "X",
+                new Vector2(1f, 1f),
+                new Vector2(1f, 1f),
+                new Vector2(-_screenMargin, -_screenMargin),
+                _closeButtonSize);
+            closeButton.onClick.AddListener(CloseMap);
+        }
+
+        private Button CreateTextButton(
+            string buttonName,
+            Transform parent,
+            string label,
+            Vector2 anchor,
+            Vector2 pivot,
+            Vector2 anchoredPosition,
+            Vector2 size)
+        {
+            GameObject buttonObject = new GameObject(buttonName, typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+
+            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+            buttonRect.anchorMin = anchor;
+            buttonRect.anchorMax = anchor;
+            buttonRect.pivot = pivot;
+            buttonRect.anchoredPosition = anchoredPosition;
+            buttonRect.sizeDelta = size;
+
+            Image background = buttonObject.GetComponent<Image>();
+            background.color = _buttonFallbackColor;
+
+            GameObject textObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            textObject.transform.SetParent(buttonObject.transform, false);
+
+            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+            textRect.anchoredPosition = Vector2.zero;
+            textRect.sizeDelta = Vector2.zero;
+
+            Text text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 30;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = _labelColor;
+            text.raycastTarget = false;
+            text.text = label;
+
+            return buttonObject.GetComponent<Button>();
         }
 
         private Text CreateLabel(Transform parent)
         {
-            GameObject labelObject = new GameObject("Debug Label", typeof(RectTransform), typeof(Text));
+            GameObject labelObject = new GameObject("Discovery Label", typeof(RectTransform), typeof(Text));
             labelObject.transform.SetParent(parent, false);
 
             RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-            labelRect.anchorMin = new Vector2(0f, 0f);
-            labelRect.anchorMax = new Vector2(1f, 0f);
+            labelRect.anchorMin = new Vector2(0.5f, 0f);
+            labelRect.anchorMax = new Vector2(0.5f, 0f);
             labelRect.pivot = new Vector2(0.5f, 0f);
-            labelRect.anchoredPosition = new Vector2(0f, PanelPadding * 0.5f);
-            labelRect.sizeDelta = new Vector2(-PanelPadding * 2f, LabelHeight);
+            labelRect.anchoredPosition = new Vector2(0f, _screenMargin);
+            labelRect.sizeDelta = new Vector2(520f, 34f);
 
             Text label = labelObject.GetComponent<Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 16;
+            label.fontSize = 18;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = _labelColor;
             label.raycastTarget = false;
             return label;
         }
 
-        private RectTransform CreateMarker(RectTransform mapParent)
+        private RectTransform CreateMarkerRoot(RectTransform mapParent)
         {
-            GameObject markerObject = new GameObject("Player Position", typeof(RectTransform), typeof(Image));
+            GameObject rootObject = new GameObject("Map Markers", typeof(RectTransform));
+            rootObject.transform.SetParent(mapParent, false);
+
+            RectTransform rootRect = rootObject.GetComponent<RectTransform>();
+            rootRect.anchorMin = Vector2.zero;
+            rootRect.anchorMax = Vector2.one;
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.anchoredPosition = Vector2.zero;
+            rootRect.sizeDelta = Vector2.zero;
+            return rootRect;
+        }
+
+        private RectTransform CreateMarker(RectTransform mapParent, string markerName, float diameter, Color color)
+        {
+            GameObject markerObject = new GameObject(markerName, typeof(RectTransform), typeof(Image));
             markerObject.transform.SetParent(mapParent, false);
 
             RectTransform markerRect = markerObject.GetComponent<RectTransform>();
@@ -248,21 +418,26 @@ namespace GameJam.Gameplay.Map
             markerRect.anchorMax = new Vector2(0.5f, 0.5f);
             markerRect.pivot = new Vector2(0.5f, 0.5f);
             markerRect.anchoredPosition = Vector2.zero;
-            markerRect.sizeDelta = Vector2.one * _playerMarkerDiameter;
+            markerRect.sizeDelta = Vector2.one * diameter;
 
             Image marker = markerObject.GetComponent<Image>();
-            marker.sprite = CreateMarkerSprite();
-            marker.color = _playerMarkerColor;
+            marker.sprite = GetMarkerSprite();
+            marker.color = color;
             marker.raycastTarget = false;
             return markerRect;
         }
 
-        private Sprite CreateMarkerSprite()
+        private Sprite GetMarkerSprite()
         {
+            if (_markerSprite != null)
+            {
+                return _markerSprite;
+            }
+
             const int textureSize = 32;
             _markerTexture = new Texture2D(textureSize, textureSize, TextureFormat.RGBA32, false, true)
             {
-                name = "MapDebugHud_PlayerMarker_Runtime",
+                name = "MapHud_Marker_Runtime",
                 filterMode = FilterMode.Bilinear,
                 wrapMode = TextureWrapMode.Clamp
             };
@@ -289,18 +464,84 @@ namespace GameJam.Gameplay.Map
                 new Rect(0f, 0f, textureSize, textureSize),
                 new Vector2(0.5f, 0.5f),
                 textureSize);
-            _markerSprite.name = "MapDebugHud_PlayerMarker_Runtime";
+            _markerSprite.name = "MapHud_Marker_Runtime";
             return _markerSprite;
         }
 
-        private void RefreshMapSource()
+        private void ToggleMap()
         {
-            if (_realMapImage == null || _discovery == null || !_discovery.IsInitialized)
+            if (_mapOpen)
+            {
+                CloseMap();
+            }
+            else
+            {
+                OpenMap();
+            }
+        }
+
+        private void ConfigureDiscoveryView()
+        {
+            if (_mapDiscoveryView == null)
             {
                 return;
             }
 
-            _realMapImage.texture = _discovery.Definition.TraversableMask;
+            _mapDiscoveryView.Configure(_discovery, _mapImage, null, GetMapTexture());
+        }
+
+        private void RefreshMapSource()
+        {
+            ConfigureDiscoveryView();
+        }
+
+        private void RefreshMinigameMarkers(bool force)
+        {
+            if (_markerRoot == null)
+            {
+                return;
+            }
+
+            if (!force && Time.unscaledTime < _nextMinigameMarkerRefreshTime)
+            {
+                return;
+            }
+
+            _nextMinigameMarkerRefreshTime = Time.unscaledTime + _minigameMarkerRefreshInterval;
+            ClearMinigameMarkers();
+
+            FindObjectsInactive inactiveMode = _includeInactiveMinigames
+                ? FindObjectsInactive.Include
+                : FindObjectsInactive.Exclude;
+            MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(inactiveMode, FindObjectsSortMode.None);
+
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                MonoBehaviour behaviour = behaviours[i];
+                if (!IsMinigameInteractable(behaviour))
+                {
+                    continue;
+                }
+
+                GameObject sourceObject = behaviour.gameObject;
+                if (!sourceObject.scene.IsValid())
+                {
+                    continue;
+                }
+
+                RectTransform marker = CreateMarker(
+                    _markerRoot,
+                    $"Minigame Position ({sourceObject.name})",
+                    _minigameMarkerDiameter,
+                    _minigameMarkerColor);
+                _minigameMarkers.Add(new MinigameMarker(behaviour, marker));
+            }
+        }
+
+        private void UpdateMarkers()
+        {
+            UpdatePlayerMarker();
+            UpdateMinigameMarkers();
         }
 
         private void UpdatePlayerMarker()
@@ -334,62 +575,82 @@ namespace GameJam.Gameplay.Map
             _playerMarker.anchoredPosition = Vector2.zero;
         }
 
-        private void UpdatePreviewRotation()
+        private void UpdateMinigameMarkers()
         {
-            if (_discovery == null)
+            if (_discovery == null || _minigameMarkers.Count == 0)
             {
                 return;
             }
 
-            if (_realMapImage != null)
+            for (int i = 0; i < _minigameMarkers.Count; i++)
             {
-                _realMapImage.rectTransform.localRotation = Quaternion.identity;
-            }
+                MinigameMarker marker = _minigameMarkers[i];
+                if (!marker.IsValid || (!_includeInactiveMinigames && !marker.Source.gameObject.activeInHierarchy))
+                {
+                    marker.SetVisible(false);
+                    continue;
+                }
 
-            if (_discoveredMapImage != null)
-            {
-                _discoveredMapImage.rectTransform.localRotation = Quaternion.identity;
+                bool isInsideMap = _discovery.TryWorldToUv(marker.Transform.position, out Vector2 uv);
+                marker.SetVisible(isInsideMap);
+                if (!isInsideMap)
+                {
+                    continue;
+                }
+
+                marker.Marker.anchorMin = uv;
+                marker.Marker.anchorMax = uv;
+                marker.Marker.anchoredPosition = Vector2.zero;
             }
         }
 
         private void UpdateLabels()
         {
-            if (_realPositionLabel != null)
-            {
-                _realPositionLabel.text = BuildPositionLabel();
-            }
-
             if (_discoveryLabel != null && _discovery != null)
             {
-                _discoveryLabel.text =
-                    $"DESCUBIERTO {_discovery.DiscoveredFraction:P1}  |  RECORRIDO {_discovery.VisitedFraction:P1}";
+                _discoveryLabel.text = $"DESCUBIERTO {_discovery.DiscoveredFraction:P1}";
             }
         }
 
-        private string BuildPositionLabel()
+        private void ClearMinigameMarkers()
         {
-            if (_player == null || _discovery == null || _discovery.Definition == null)
+            for (int i = 0; i < _minigameMarkers.Count; i++)
             {
-                return "POSICION REAL: sin jugador";
+                RectTransform marker = _minigameMarkers[i].Marker;
+                if (marker != null)
+                {
+                    DestroyRuntimeObject(marker.gameObject);
+                }
             }
 
-            Vector3 position = _player.position;
-            return _discovery.Definition.WorldPlane == MapWorldPlane.XY
-                ? $"POSICION REAL  X {position.x:0.00}  Y {position.y:0.00}"
-                : $"POSICION REAL  X {position.x:0.00}  Z {position.z:0.00}";
+            _minigameMarkers.Clear();
+        }
+
+        private Texture GetMapTexture()
+        {
+            if (_mapTextureOverride != null)
+            {
+                return _mapTextureOverride;
+            }
+
+            return _discovery != null && _discovery.Definition != null
+                ? _discovery.Definition.TraversableMask
+                : null;
         }
 
         private void ApplyMapAspectRatio()
         {
-            if (!_preserveMapAspectRatio ||
-                _discovery == null ||
-                _discovery.Definition == null ||
-                _discovery.Definition.TraversableMask == null)
+            if (!_preserveMapAspectRatio)
             {
                 return;
             }
 
-            Texture2D map = _discovery.Definition.TraversableMask;
+            Texture map = GetMapTexture();
+            if (map == null || map.width <= 0)
+            {
+                return;
+            }
+
             _mapPanelSize.y = _mapPanelSize.x * map.height / map.width;
         }
 
@@ -397,6 +658,18 @@ namespace GameJam.Gameplay.Map
         {
             _mapPanelSize.x = Mathf.Max(64f, _mapPanelSize.x);
             _mapPanelSize.y = Mathf.Max(64f, _mapPanelSize.y);
+            _openButtonSize.x = Mathf.Max(48f, _openButtonSize.x);
+            _openButtonSize.y = Mathf.Max(48f, _openButtonSize.y);
+            _closeButtonSize.x = Mathf.Max(40f, _closeButtonSize.x);
+            _closeButtonSize.y = Mathf.Max(40f, _closeButtonSize.y);
+            _playerMarkerDiameter = Mathf.Max(1f, _playerMarkerDiameter);
+            _minigameMarkerDiameter = Mathf.Max(1f, _minigameMarkerDiameter);
+            _minigameMarkerRefreshInterval = Mathf.Max(0.1f, _minigameMarkerRefreshInterval);
+        }
+
+        private static bool IsMinigameInteractable(MonoBehaviour behaviour)
+        {
+            return behaviour != null && behaviour.GetType().FullName == MinigameInteractableTypeName;
         }
 
         private static void DestroyRuntimeObject(Object target)
@@ -408,6 +681,29 @@ namespace GameJam.Gameplay.Map
             else
             {
                 DestroyImmediate(target);
+            }
+        }
+
+        private sealed class MinigameMarker
+        {
+            public MinigameMarker(MonoBehaviour source, RectTransform marker)
+            {
+                Source = source;
+                Transform = source != null ? source.transform : null;
+                Marker = marker;
+            }
+
+            public MonoBehaviour Source { get; }
+            public Transform Transform { get; }
+            public RectTransform Marker { get; }
+            public bool IsValid => Source != null && Transform != null && Marker != null;
+
+            public void SetVisible(bool visible)
+            {
+                if (Marker != null && Marker.gameObject.activeSelf != visible)
+                {
+                    Marker.gameObject.SetActive(visible);
+                }
             }
         }
     }

@@ -2114,15 +2114,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: GameJam.MapDiscovery::GameJam.Gameplay.Map.MapDebugHud
   _discovery: {fileID: 1239685445}
   _player: {fileID: 758733677565559809}
-  _realMapTextureOverride: {fileID: 2800000, guid: ae1cb06ba16614d378621a0ec0e8061e, type: 3}
-  _mapPanelSize: {x: 360, y: 203}
+  _mapTextureOverride: {fileID: 2800000, guid: cd5ce87bec7644939d3110f82a2e9ec9, type: 3}
+  _openButtonSprite: {fileID: 21300000, guid: cb5d4f1ea4884c3280e8aa6a18fc1fa6, type: 3}
+  _mapPanelSize: {x: 1500, y: 842}
   _preserveMapAspectRatio: 1
   _screenMargin: 20
+  _openButtonSize: {x: 92, y: 92}
+  _closeButtonSize: {x: 64, y: 64}
   _sortingOrder: 1000
-  _playerMarkerDiameter: 12
+  _pauseGameWhenOpen: 1
+  _playerMarkerDiameter: 14
   _playerMarkerColor: {r: 1, g: 0, b: 0, a: 1}
-  _panelBackgroundColor: {r: 0.04, g: 0.04, b: 0.04, a: 0.9}
+  _minigameMarkerDiameter: 12
+  _minigameMarkerColor: {r: 1, g: 0.48, b: 0.05, a: 1}
+  _panelBackgroundColor: {r: 0, g: 0, b: 0, a: 0.78}
   _labelColor: {r: 1, g: 1, b: 1, a: 1}
+  _buttonFallbackColor: {r: 0.1, g: 0.09, b: 0.05, a: 0.9}
+  _includeInactiveMinigames: 0
+  _minigameMarkerRefreshInterval: 1
 --- !u!114 &1239685445
 MonoBehaviour:
   m_ObjectHideFlags: 0

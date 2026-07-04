@@ -115,7 +115,7 @@ namespace GameJam.Gameplay.Map.Tests
         }
 
         [Test]
-        public void MapDebugHud_Initialize_CreatesBothMapPanels()
+        public void MapDebugHud_Initialize_CreatesMapButtonAndClosedOverlay()
         {
             GameObject player = new GameObject("MapDebugHudTests_Player");
 
@@ -128,9 +128,12 @@ namespace GameJam.Gameplay.Map.Tests
                 hud.Initialize();
 
                 Assert.That(hud.HudRoot, Is.Not.Null);
-                Assert.That(hud.HudRoot.transform.Find("Real Position Map/Map"), Is.Not.Null);
-                Assert.That(hud.HudRoot.transform.Find("Discovered Map/Map"), Is.Not.Null);
-                Assert.That(hud.HudRoot.transform.Find("Real Position Map/Map/Player Position"), Is.Not.Null);
+                Assert.That(hud.HudRoot.transform.Find("Open Map Button"), Is.Not.Null);
+                Transform overlay = hud.HudRoot.transform.Find("Map Overlay");
+                Assert.That(overlay, Is.Not.Null);
+                Assert.That(overlay.gameObject.activeSelf, Is.False);
+                Assert.That(hud.HudRoot.transform.Find("Map Overlay/Map Frame/Discovered Map"), Is.Not.Null);
+                Assert.That(hud.HudRoot.transform.Find("Map Overlay/Map Frame/Discovered Map/Map Markers/Player Position"), Is.Not.Null);
             }
             finally
             {
@@ -151,20 +154,19 @@ namespace GameJam.Gameplay.Map.Tests
 
                 hud.Configure(_discovery, player.transform);
                 hud.Initialize();
+                hud.OpenMap();
 
-                Transform realMap = hud.HudRoot.transform.Find("Real Position Map/Map");
-                Transform discoveredMap = hud.HudRoot.transform.Find("Discovered Map/Map");
-                RectTransform marker = (RectTransform)realMap.Find("Player Position");
+                Transform discoveredMap = hud.HudRoot.transform.Find("Map Overlay/Map Frame/Discovered Map");
+                RectTransform marker = (RectTransform)discoveredMap.Find("Map Markers/Player Position");
 
-                Assert.That(Mathf.Abs(Mathf.DeltaAngle(realMap.localEulerAngles.z, 0f)), Is.LessThan(0.01f));
                 Assert.That(Mathf.Abs(Mathf.DeltaAngle(discoveredMap.localEulerAngles.z, 0f)), Is.LessThan(0.01f));
                 Assert.That(marker.anchorMin.x, Is.EqualTo(0.25f).Within(0.001f));
                 Assert.That(marker.anchorMin.y, Is.EqualTo(0.25f).Within(0.001f));
-                AssertRectStaysInsideParent((RectTransform)realMap);
                 AssertRectStaysInsideParent((RectTransform)discoveredMap);
             }
             finally
             {
+                Time.timeScale = 1f;
                 Object.DestroyImmediate(player);
             }
         }

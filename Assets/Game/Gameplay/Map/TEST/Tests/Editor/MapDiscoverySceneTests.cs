@@ -7,6 +7,9 @@ namespace GameJam.Gameplay.Map.Tests
 {
     public sealed class MapDiscoverySceneTests
     {
+        private const string SceneMapPath = "Assets/Game/Art/Cave/Background/Mapa General Capa 2.300.png";
+        private const string HudMapPath = "Assets/Game/Art/UI/Map/Mapa_General_96.png";
+
         [Test]
         public void CaveScene_MapDiscoveryMatchesMapPlane()
         {
@@ -33,7 +36,7 @@ namespace GameJam.Gameplay.Map.Tests
             Assert.That(planeRenderer.bounds.size.y, Is.EqualTo(discovery.Definition.WorldSize.y).Within(0.01f));
 
             Assert.That(AssetDatabase.GetAssetPath(planeRenderer.sharedMaterial.GetTexture("_BaseMap")),
-                Is.EqualTo("Assets/Game/Gameplay/Map/TEST/Example/MapBeta_1.PNG"));
+                Is.EqualTo(SceneMapPath));
 
             MapDiscoveryView discoveryView = planeObject.GetComponent<MapDiscoveryView>();
             Assert.That(discoveryView, Is.Not.Null);
@@ -41,10 +44,14 @@ namespace GameJam.Gameplay.Map.Tests
             SerializedObject serializedView = new SerializedObject(discoveryView);
             Texture mapTextureOverride = serializedView.FindProperty("_mapTextureOverride").objectReferenceValue as Texture;
             Assert.That(AssetDatabase.GetAssetPath(mapTextureOverride),
-                Is.EqualTo("Assets/Game/Gameplay/Map/TEST/Example/MapBeta_1.PNG"));
+                Is.EqualTo(SceneMapPath));
 
             MapDebugHud debugHud = mapObject.GetComponent<MapDebugHud>();
             Assert.That(debugHud, Is.Not.Null);
+
+            SerializedObject serializedHud = new SerializedObject(debugHud);
+            Texture hudMapTexture = serializedHud.FindProperty("_mapTextureOverride").objectReferenceValue as Texture;
+            Assert.That(AssetDatabase.GetAssetPath(hudMapTexture), Is.EqualTo(HudMapPath));
 
             discovery.Initialize();
             Assert.That(discovery.TrackedTransform, Is.Not.Null);
