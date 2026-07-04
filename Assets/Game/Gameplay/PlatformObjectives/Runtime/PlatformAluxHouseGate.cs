@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using GameJam.Creatures;
+using GameJam.UI;
 using TMPro;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ namespace GameJam.Gameplay.PlatformObjectives
         [Header("Trigger")]
         [SerializeField] private string _playerTag = "Player";
         [SerializeField] private bool _onlyTriggerTransitionOnce = true;
+        [SerializeField] private string _nextSceneName = "END";
 
         private readonly HashSet<string> _collectedItemIds = new();
         private readonly HashSet<string> _discoveredAnimalIds = new();
@@ -92,7 +94,12 @@ namespace GameJam.Gameplay.PlatformObjectives
                 return;
 
             _transitionTriggered = true;
-            Debug.Log("[PlatformAluxHouseGate] Objetivo completo. Aqui va la cinematica de transicion.", this);
+            StartCoroutine(PlayEndingRoutine());
+        }
+
+        private System.Collections.IEnumerator PlayEndingRoutine()
+        {
+            yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.PlatformEnding, false, _nextSceneName);
         }
 
         public bool RegisterCollectible(PlatformObjectiveCollectible collectible)

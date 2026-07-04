@@ -1,3 +1,5 @@
+using System.Collections;
+using GameJam.UI;
 using UnityEngine;
 
 namespace GameJam.Player.Cave
@@ -17,6 +19,7 @@ namespace GameJam.Player.Cave
         [SerializeField] private Transform _initialResetTarget;
 
         private Rigidbody2D _rigidbody;
+        private Coroutine _linternaRoutine;
         private bool _linternaTriggered;
 
         private void Reset()
@@ -55,15 +58,27 @@ namespace GameJam.Player.Cave
             if (_triggerLinternaOnlyOnce && _linternaTriggered)
                 return;
 
+            if (_linternaRoutine != null)
+                return;
+
             _linternaTriggered = true;
+
+            _linternaRoutine = StartCoroutine(TriggerLinternaRoutine());
+        }
+
+        private IEnumerator TriggerLinternaRoutine()
+        {
+            yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.Linterna, true);
 
             if (_linternaTransition != null)
             {
                 _linternaTransition.StartTransition(_linternaTarget);
-                return;
+                _linternaRoutine = null;
+                yield break;
             }
 
             TeleportTo(_linternaTarget);
+            _linternaRoutine = null;
         }
 
         private void TriggerInitialReset()

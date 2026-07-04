@@ -197,6 +197,7 @@ namespace GameJam.Gameplay.Minigames
         private string _boundMinigameId = "measurement";
 
         public int CurrentQuestionIndex => _currentQuestionIndex;
+        public UnityEvent Completed => _completed;
 
         private void Awake()
         {

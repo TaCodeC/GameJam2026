@@ -518,6 +518,12 @@ namespace GameJam.Gameplay.Map
             for (int i = 0; i < behaviours.Length; i++)
             {
                 MonoBehaviour behaviour = behaviours[i];
+                if (behaviour is MapAttentionMarker attentionMarker)
+                {
+                    CreateAttentionMarker(attentionMarker);
+                    continue;
+                }
+
                 if (!IsMinigameInteractable(behaviour))
                 {
                     continue;
@@ -536,6 +542,27 @@ namespace GameJam.Gameplay.Map
                     _minigameMarkerColor);
                 _minigameMarkers.Add(new MinigameMarker(behaviour, marker));
             }
+        }
+
+        private void CreateAttentionMarker(MapAttentionMarker attentionMarker)
+        {
+            if (attentionMarker == null || !attentionMarker.VisibleOnMap)
+            {
+                return;
+            }
+
+            GameObject sourceObject = attentionMarker.gameObject;
+            if (!sourceObject.scene.IsValid())
+            {
+                return;
+            }
+
+            RectTransform marker = CreateMarker(
+                _markerRoot,
+                $"Attention Position ({sourceObject.name})",
+                attentionMarker.Diameter,
+                attentionMarker.Color);
+            _minigameMarkers.Add(new MinigameMarker(attentionMarker, marker));
         }
 
         private void UpdateMarkers()

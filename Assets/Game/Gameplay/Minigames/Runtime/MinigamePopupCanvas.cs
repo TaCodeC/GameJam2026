@@ -31,14 +31,18 @@ namespace GameJam.Gameplay.Minigames
         [SerializeField] private Button _closeButton;
         [SerializeField] private bool _hideOnAwake = true;
         [SerializeField] private bool _createEventSystemIfMissing = true;
+        [SerializeField] private bool _registerBoneCompletion = true;
+        [SerializeField] private bool _destroyCurrentObjectOnCompletion = true;
         [SerializeField] private MinigameObjectState _currentObjectState;
         [SerializeField] private List<MinigamePanel> _minigames = new();
         [SerializeField] private UnityEvent<string> _opened = new();
         [SerializeField] private UnityEvent _closed = new();
 
         private readonly List<UnityAction> _testButtonActions = new();
+        private readonly List<CompletionBinding> _completionBindings = new();
         private UnityAction _closeAction;
         private bool _buttonsBound;
+        private bool _handlingCompletion;
         private int _currentIndex = -1;
 
         public int CurrentIndex => _currentIndex;
@@ -66,6 +70,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void OnDisable()
         {
+            UnbindCompletionHandlers();
             UnbindButtons();
         }
 
@@ -102,6 +107,7 @@ namespace GameJam.Gameplay.Minigames
             if (IsValidIndex(_currentIndex))
             {
                 BindStateToPanel(_minigames[_currentIndex]);
+                BindCompletionHandlers(_minigames[_currentIndex]);
             }
         }
 
@@ -145,6 +151,7 @@ namespace GameJam.Gameplay.Minigames
             panel.Root.SetActive(true);
             _currentIndex = index;
             BindStateToPanel(panel);
+            BindCompletionHandlers(panel);
             _opened.Invoke(panel.Id);
             Debug.Log($"[Minigames] Opened mini game '{panel.Id}'.", this);
         }
@@ -156,6 +163,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void Hide(bool invokeEvent)
         {
+            UnbindCompletionHandlers();
             HidePanels();
 
             if (_popupGroup != null)
@@ -194,6 +202,67 @@ namespace GameJam.Gameplay.Minigames
                     stateConsumer.BindState(_currentObjectState, panel.Id);
                 }
             }
+        }
+
+        private void BindCompletionHandlers(MinigamePanel panel)
+        {
+            UnbindCompletionHandlers();
+
+            if (panel == null || panel.Root == null)
+            {
+                return;
+            }
+
+            MeasurementMinigame[] measurementMinigames = panel.Root.GetComponentsInChildren<MeasurementMinigame>(true);
+            for (int i = 0; i < measurementMinigames.Length; i++)
+            {
+                UnityAction action = HandleCurrentMinigameCompleted;
+                measurementMinigames[i].Completed.AddListener(action);
+                _completionBindings.Add(new CompletionBinding(measurementMinigames[i].Completed, action));
+            }
+
+            DragDropMinigame[] dragDropMinigames = panel.Root.GetComponentsInChildren<DragDropMinigame>(true);
+            for (int i = 0; i < dragDropMinigames.Length; i++)
+            {
+                UnityAction action = HandleCurrentMinigameCompleted;
+                dragDropMinigames[i].Completed.AddListener(action);
+                _completionBindings.Add(new CompletionBinding(dragDropMinigames[i].Completed, action));
+            }
+        }
+
+        private void UnbindCompletionHandlers()
+        {
+            for (int i = 0; i < _completionBindings.Count; i++)
+            {
+                _completionBindings[i].Remove();
+            }
+
+            _completionBindings.Clear();
+        }
+
+        private void HandleCurrentMinigameCompleted()
+        {
+            if (_handlingCompletion)
+            {
+                return;
+            }
+
+            _handlingCompletion = true;
+            MinigameObjectState completedObjectState = _currentObjectState;
+
+            if (_registerBoneCompletion)
+            {
+                BoneCollectionProgress.Active.RegisterCompletedBone(completedObjectState);
+            }
+
+            Hide();
+
+            if (_destroyCurrentObjectOnCompletion && completedObjectState != null)
+            {
+                Destroy(completedObjectState.gameObject);
+            }
+
+            _handlingCompletion = false;
         }
 
         private void HidePanels()
@@ -281,6 +350,26 @@ namespace GameJam.Gameplay.Minigames
         private bool IsValidIndex(int index)
         {
             return index >= 0 && index < _minigames.Count;
+        }
+
+        private readonly struct CompletionBinding
+        {
+            private readonly UnityEvent _event;
+            private readonly UnityAction _action;
+
+            public CompletionBinding(UnityEvent unityEvent, UnityAction action)
+            {
+                _event = unityEvent;
+                _action = action;
+            }
+
+            public void Remove()
+            {
+                if (_event != null && _action != null)
+                {
+                    _event.RemoveListener(_action);
+                }
+            }
         }
     }
 }

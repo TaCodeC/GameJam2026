@@ -52,6 +52,7 @@ namespace GameJam.Gameplay.Minigames
         private string _boundMinigameId = "drag-drop";
 
         public RectTransform DragPlane => _dragPlane != null ? _dragPlane : transform as RectTransform;
+        public UnityEvent Completed => _completed;
 
         private void Awake()
         {
