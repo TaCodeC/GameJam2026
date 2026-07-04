@@ -10,14 +10,43 @@ namespace GameJam.Gameplay.Map
         private static readonly int DiscoveryTextureId = Shader.PropertyToID("_DiscoveryTex");
         private static readonly int HiddenColorId = Shader.PropertyToID("_HiddenColor");
         private static readonly int RevealedTintId = Shader.PropertyToID("_RevealedTint");
+        private static readonly int ZWriteId = Shader.PropertyToID("_ZWrite");
+        private static readonly int MapAlphaClipThresholdId = Shader.PropertyToID("_MapAlphaClipThreshold");
+        private static readonly int HdrMultiplierId = Shader.PropertyToID("_HdrMultiplier");
+        private static readonly int FlashlightHaloPowerId = Shader.PropertyToID("_FlashlightHaloPower");
+        private static readonly int FlashlightHaloSpreadId = Shader.PropertyToID("_FlashlightHaloSpread");
+        private static readonly int FlashlightHaloIntensityId = Shader.PropertyToID("_FlashlightHaloIntensity");
+        private static readonly int FlashlightShadowStrengthId = Shader.PropertyToID("_FlashlightShadowStrength");
+        private static readonly int FlashlightCoreColorId = Shader.PropertyToID("_FlashlightCoreColor");
+        private static readonly int FlashlightCoreIntensityId = Shader.PropertyToID("_FlashlightCoreIntensity");
+        private static readonly int FlashlightCoreThresholdId = Shader.PropertyToID("_FlashlightCoreThreshold");
+        private static readonly int FlashlightCoreSoftnessId = Shader.PropertyToID("_FlashlightCoreSoftness");
+        private static readonly int FlashlightCorePowerId = Shader.PropertyToID("_FlashlightCorePower");
+        private static readonly int OutsideLightDarknessId = Shader.PropertyToID("_OutsideLightDarkness");
+        private static readonly int OutsideLightTintId = Shader.PropertyToID("_OutsideLightTint");
 
         [SerializeField] private MapDiscoverySystem _discovery;
         [Tooltip("Use either a world Renderer or a UI RawImage.")]
         [SerializeField] private Renderer _targetRenderer;
         [SerializeField] private RawImage _targetRawImage;
         [SerializeField] private Shader _discoveryShader;
+        [Tooltip("Optional visual map texture. Leave empty to reveal the traversable mask itself.")]
+        [SerializeField] private Texture _mapTextureOverride;
         [SerializeField] private Color _hiddenColor = Color.black;
         [SerializeField] private Color _revealedTint = Color.white;
+        [SerializeField, Range(0f, 1f)] private float _mapAlphaClipThreshold = 0.01f;
+        [SerializeField, Min(0f)] private float _hdrMultiplier = 1f;
+        [SerializeField, Min(0.01f)] private float _flashlightHaloPower = 1.35f;
+        [SerializeField, Range(0f, 1f)] private float _flashlightHaloSpread = 0.35f;
+        [SerializeField] private float _flashlightHaloIntensity = 1f;
+        [SerializeField, Range(0f, 1f)] private float _flashlightShadowStrength;
+        [SerializeField, ColorUsage(true, true)] private Color _flashlightCoreColor = Color.white;
+        [SerializeField, Min(0f)] private float _flashlightCoreIntensity = 2.5f;
+        [SerializeField, Min(0f)] private float _flashlightCoreThreshold = 1.1f;
+        [SerializeField, Min(0.001f)] private float _flashlightCoreSoftness = 0.6f;
+        [SerializeField, Min(0.01f)] private float _flashlightCorePower = 3f;
+        [SerializeField, Range(0f, 1f)] private float _outsideLightDarkness = 0.65f;
+        [SerializeField] private Color _outsideLightTint = new Color(0.04f, 0.12f, 0.14f, 1f);
 
         private Material _runtimeMaterial;
         private Material _originalRendererMaterial;
@@ -27,7 +56,8 @@ namespace GameJam.Gameplay.Map
         public void Configure(
             MapDiscoverySystem discovery,
             RawImage targetRawImage,
-            Renderer targetRenderer = null)
+            Renderer targetRenderer = null,
+            Texture mapTextureOverride = null)
         {
             if (isActiveAndEnabled && _discovery != null)
             {
@@ -40,6 +70,7 @@ namespace GameJam.Gameplay.Map
             _discovery = discovery;
             _targetRawImage = targetRawImage;
             _targetRenderer = targetRenderer;
+            _mapTextureOverride = mapTextureOverride;
 
             if (!isActiveAndEnabled)
             {
@@ -98,8 +129,7 @@ namespace GameJam.Gameplay.Map
             {
                 name = "MapDiscoveryView_Runtime"
             };
-            _runtimeMaterial.SetColor(HiddenColorId, _hiddenColor);
-            _runtimeMaterial.SetColor(RevealedTintId, _revealedTint);
+            ApplyMaterialProperties();
 
             if (_targetRenderer != null)
             {
@@ -115,6 +145,98 @@ namespace GameJam.Gameplay.Map
             }
         }
 
+        private void OnValidate()
+        {
+            _hdrMultiplier = Mathf.Max(0f, _hdrMultiplier);
+            _flashlightHaloPower = Mathf.Max(0.01f, _flashlightHaloPower);
+            _flashlightCoreIntensity = Mathf.Max(0f, _flashlightCoreIntensity);
+            _flashlightCoreThreshold = Mathf.Max(0f, _flashlightCoreThreshold);
+            _flashlightCoreSoftness = Mathf.Max(0.001f, _flashlightCoreSoftness);
+            _flashlightCorePower = Mathf.Max(0.01f, _flashlightCorePower);
+            ApplyMaterialProperties();
+        }
+
+        private void ApplyMaterialProperties()
+        {
+            if (_runtimeMaterial == null)
+            {
+                return;
+            }
+
+            _runtimeMaterial.SetColor(HiddenColorId, _hiddenColor);
+            _runtimeMaterial.SetColor(RevealedTintId, _revealedTint);
+
+            if (_runtimeMaterial.HasProperty(ZWriteId))
+            {
+                _runtimeMaterial.SetFloat(ZWriteId, _targetRenderer != null ? 1f : 0f);
+            }
+
+            if (_runtimeMaterial.HasProperty(MapAlphaClipThresholdId))
+            {
+                _runtimeMaterial.SetFloat(MapAlphaClipThresholdId, _mapAlphaClipThreshold);
+            }
+
+            if (_runtimeMaterial.HasProperty(HdrMultiplierId))
+            {
+                _runtimeMaterial.SetFloat(HdrMultiplierId, _hdrMultiplier);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightHaloPowerId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightHaloPowerId, _flashlightHaloPower);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightHaloSpreadId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightHaloSpreadId, _flashlightHaloSpread);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightHaloIntensityId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightHaloIntensityId, _flashlightHaloIntensity);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightShadowStrengthId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightShadowStrengthId, _flashlightShadowStrength);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightCoreColorId))
+            {
+                _runtimeMaterial.SetColor(FlashlightCoreColorId, _flashlightCoreColor);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightCoreIntensityId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightCoreIntensityId, _flashlightCoreIntensity);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightCoreThresholdId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightCoreThresholdId, _flashlightCoreThreshold);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightCoreSoftnessId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightCoreSoftnessId, _flashlightCoreSoftness);
+            }
+
+            if (_runtimeMaterial.HasProperty(FlashlightCorePowerId))
+            {
+                _runtimeMaterial.SetFloat(FlashlightCorePowerId, _flashlightCorePower);
+            }
+
+            if (_runtimeMaterial.HasProperty(OutsideLightDarknessId))
+            {
+                _runtimeMaterial.SetFloat(OutsideLightDarknessId, _outsideLightDarkness);
+            }
+
+            if (_runtimeMaterial.HasProperty(OutsideLightTintId))
+            {
+                _runtimeMaterial.SetColor(OutsideLightTintId, _outsideLightTint);
+            }
+        }
+
         private void BindTextures()
         {
             if (_runtimeMaterial == null || _discovery == null || !_discovery.IsInitialized)
@@ -122,12 +244,16 @@ namespace GameJam.Gameplay.Map
                 return;
             }
 
-            _runtimeMaterial.SetTexture(MapTextureId, _discovery.Definition.TraversableMask);
+            Texture mapTexture = _mapTextureOverride != null
+                ? _mapTextureOverride
+                : _discovery.Definition.TraversableMask;
+
+            _runtimeMaterial.SetTexture(MapTextureId, mapTexture);
             _runtimeMaterial.SetTexture(DiscoveryTextureId, _discovery.DiscoveryTexture);
 
             if (_targetRawImage != null)
             {
-                _targetRawImage.texture = _discovery.Definition.TraversableMask;
+                _targetRawImage.texture = mapTexture;
             }
         }
 

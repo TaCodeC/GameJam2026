@@ -50,7 +50,7 @@ namespace GameJam.Gameplay.Map
             ResolveTrackedTransformIfNeeded();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             ResolveTrackedTransformIfNeeded();
 

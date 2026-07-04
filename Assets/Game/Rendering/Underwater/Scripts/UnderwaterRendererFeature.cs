@@ -21,6 +21,10 @@ namespace GameJam.Rendering.Underwater
         [SerializeField]
         bool gameCamerasOnly = true;
 
+        [SerializeField]
+        [Tooltip("Si no hay UnderwaterEffectController activo en la escena, el pass ni se encola. Como apagar la alberca cuando nadie se mete.")]
+        bool requireActiveController = true;
+
         UnderwaterRenderPass pass;
 
         public override void Create()
@@ -32,6 +36,9 @@ namespace GameJam.Rendering.Underwater
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             if (underwaterMaterial == null)
+                return;
+
+            if (requireActiveController && !UnderwaterEffectController.HasActiveController)
                 return;
 
             CameraType cameraType = renderingData.cameraData.cameraType;

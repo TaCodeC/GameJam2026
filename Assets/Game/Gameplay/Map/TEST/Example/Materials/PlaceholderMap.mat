@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PlaceholderMap
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: e6cf0215ab654945b7120a727a6bf750, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17,8 +17,7 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -26,7 +25,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 637a19e39b4014d859b6eae13c9f1fd7, type: 3}
+        m_Texture: {fileID: 2800000, guid: ae1cb06ba16614d378621a0ec0e8061e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -54,7 +53,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 637a19e39b4014d859b6eae13c9f1fd7, type: 3}
+        m_Texture: {fileID: 2800000, guid: ae1cb06ba16614d378621a0ec0e8061e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -88,8 +87,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
+    - _AdditionalLightStrength: 1.15
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _AmbientStrength: 0.04
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BlendOp: 0
@@ -113,14 +114,27 @@ Material:
     - _DstBlendAlpha: 0
     - _EmissionEnabled: 0
     - _EnvironmentReflections: 1
+    - _FlashlightCoreIntensity: 2.5
+    - _FlashlightCorePower: 3
+    - _FlashlightCoreSoftness: 0.6
+    - _FlashlightCoreThreshold: 1.1
+    - _FlashlightHaloIntensity: 1.45
+    - _FlashlightHaloPower: 1.35
+    - _FlashlightHaloSpread: 0.9
+    - _FlashlightShadowStrength: 0
     - _FlipbookMode: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HdrMultiplier: 1
     - _LightingEnabled: 0
+    - _MainLightStrength: 0.03
+    - _MaxLightIntensity: 2.5
     - _Metallic: 0
     - _Mode: 0
+    - _NormalInfluence: 0.25
     - _OcclusionStrength: 1
+    - _OutsideLightDarkness: 0.88
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -143,6 +157,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FlashlightCoreColor: {r: 1, g: 0.96, b: 0.82, a: 1}
+    - _OutsideLightTint: {r: 0.015, g: 0.06, b: 0.075, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []

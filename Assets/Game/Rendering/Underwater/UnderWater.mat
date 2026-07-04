@@ -25,6 +25,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _UW_CAUSTICS_ON
   - _UW_DISTORTION_ON
   - _UW_QUALITY_MEDIUM
   m_InvalidKeywords: []
@@ -48,7 +49,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CausticsTexture:
-        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        m_Texture: {fileID: 2800000, guid: a6570606809384370ad81433884107ac, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -117,18 +118,18 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _Darkness: 0.25
+    - _Darkness: 0.376
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DistortionSpeed: 0.05
-    - _DistortionStrength: 0.008
+    - _DistortionSpeed: 0.16
+    - _DistortionStrength: 0.039
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _LightIntensity: 0.28
+    - _LightIntensity: 0.5
     - _LightRadius: 0.35
     - _Metallic: 0
     - _OcclusionStrength: 1
@@ -141,9 +142,9 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _TintIntensity: 0.35
-    - _VerticalGradientStrength: 0.3
-    - _VignetteStrength: 0.35
+    - _TintIntensity: 0.284
+    - _VerticalGradientStrength: 0.936
+    - _VignetteStrength: 0.454
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
@@ -151,9 +152,9 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _LightColor: {r: 0.34, g: 1, b: 0.82, a: 1}
+    - _LightColor: {r: 0.6273585, g: 0.95308965, b: 1, a: 1}
     - _LightViewportPosition: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _UnderwaterColor: {r: 0.03, g: 0.48, b: 0.52, a: 1}
+    - _UnderwaterColor: {r: 0.10786757, g: 0.13830546, b: 0.2264151, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

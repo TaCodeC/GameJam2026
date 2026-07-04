@@ -23,6 +23,7 @@ namespace GameJam.Player
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private bool _rotateVisualWithMovement = true;
         [SerializeField] private bool _keepVisualUprightWhenFacingLeft = true;
+        [SerializeField, Range(0f, 45f)] private float _uprightFlipToleranceDegrees = 18f;
         [SerializeField, Min(0f)] private float _rotationDegreesPerSecond = 540f;
         [SerializeField] private bool _flipSpriteWithHorizontalMovement;
 
@@ -31,6 +32,7 @@ namespace GameJam.Player
 
         private Animator _animator;
         private Vector2 _lastFacing = Vector2.right;
+        private bool _visualFlipped;
 
         private void Reset()
         {
@@ -50,6 +52,9 @@ namespace GameJam.Player
 
             if (_gameInput == null && _autoFindGameInput)
                 _gameInput = FindFirstObjectByType<GameInput>();
+
+            if (_spriteRenderer != null)
+                _visualFlipped = _spriteRenderer.flipY;
         }
 
         private void Update()
@@ -111,8 +116,32 @@ namespace GameJam.Player
             if (_keepVisualUprightWhenFacingLeft && _spriteRenderer != null)
             {
                 float currentAngle = Mathf.DeltaAngle(0f, _visualRoot.localEulerAngles.z);
-                _spriteRenderer.flipY = currentAngle > 90f || currentAngle < -90f;
+                UpdateVisualFlip(currentAngle);
             }
+        }
+
+        private void UpdateVisualFlip(float currentAngle)
+        {
+            bool shouldFlip = ShouldFlipForAngle(currentAngle, _visualFlipped);
+
+            if (shouldFlip != _visualFlipped)
+                ApplyVisualFlip(shouldFlip);
+        }
+
+        private bool ShouldFlipForAngle(float currentAngle, bool referenceFlipped)
+        {
+            float absAngle = Mathf.Abs(currentAngle);
+            float tolerance = Mathf.Clamp(_uprightFlipToleranceDegrees, 0f, 45f);
+            float threshold = referenceFlipped ? 90f - tolerance : 90f + tolerance;
+            return absAngle > threshold;
+        }
+
+        private void ApplyVisualFlip(bool flipped)
+        {
+            _visualFlipped = flipped;
+
+            if (_spriteRenderer != null)
+                _spriteRenderer.flipY = flipped;
         }
     }
 }

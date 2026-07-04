@@ -7,6 +7,8 @@ Shader "GameJam/Map/Discovery"
         _DiscoveryTex ("Discovery", 2D) = "black" {}
         _HiddenColor ("Hidden Color", Color) = (0, 0, 0, 1)
         _RevealedTint ("Revealed Tint", Color) = (1, 1, 1, 1)
+        [MaterialToggle] _ZWrite ("ZWrite", Float) = 0
+        _MapAlphaClipThreshold ("Map Alpha Clip Threshold", Range(0, 1)) = 0.01
     }
 
     SubShader
@@ -22,7 +24,8 @@ Shader "GameJam/Map/Discovery"
         {
             Blend SrcAlpha OneMinusSrcAlpha
             Cull Off
-            ZWrite Off
+            ZTest LEqual
+            ZWrite [_ZWrite]
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -50,6 +53,7 @@ Shader "GameJam/Map/Discovery"
             CBUFFER_START(UnityPerMaterial)
                 half4 _HiddenColor;
                 half4 _RevealedTint;
+                half _MapAlphaClipThreshold;
             CBUFFER_END
 
             Varyings Vert(Attributes input)
@@ -64,6 +68,7 @@ Shader "GameJam/Map/Discovery"
             {
                 half reveal = SAMPLE_TEXTURE2D(_DiscoveryTex, sampler_DiscoveryTex, input.uv).r;
                 half4 mapColor = SAMPLE_TEXTURE2D(_MapTex, sampler_MapTex, input.uv) * _RevealedTint;
+                clip(mapColor.a - _MapAlphaClipThreshold);
                 return lerp(_HiddenColor, mapColor, saturate(reveal));
             }
             ENDHLSL

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameJam.Rendering.Underwater
@@ -13,6 +14,8 @@ namespace GameJam.Rendering.Underwater
     [DisallowMultipleComponent]
     public sealed class UnderwaterEffectController : MonoBehaviour
     {
+        static readonly List<UnderwaterEffectController> ActiveControllers = new();
+
         static readonly int UnderwaterColorId = Shader.PropertyToID("_UnderwaterColor");
         static readonly int TintIntensityId = Shader.PropertyToID("_TintIntensity");
         static readonly int DarknessId = Shader.PropertyToID("_Darkness");
@@ -34,6 +37,15 @@ namespace GameJam.Rendering.Underwater
         const string LowQualityKeyword = "_UW_QUALITY_LOW";
         const string MediumQualityKeyword = "_UW_QUALITY_MEDIUM";
         const string HighQualityKeyword = "_UW_QUALITY_HIGH";
+
+        public static bool HasActiveController
+        {
+            get
+            {
+                CleanDeadControllers();
+                return ActiveControllers.Count > 0;
+            }
+        }
 
         [Header("Target")]
         [Tooltip("Material del shader fullscreen o del overlay. Es el control remoto del cenote.")]
@@ -101,7 +113,13 @@ namespace GameJam.Rendering.Underwater
 
         void OnEnable()
         {
+            RegisterActiveController(this);
             ApplySettings();
+        }
+
+        void OnDisable()
+        {
+            ActiveControllers.Remove(this);
         }
 
         void LateUpdate()
@@ -212,6 +230,22 @@ namespace GameJam.Rendering.Underwater
                 default:
                     material.EnableKeyword(MediumQualityKeyword);
                     break;
+            }
+        }
+
+        static void RegisterActiveController(UnderwaterEffectController controller)
+        {
+            if (!ActiveControllers.Contains(controller))
+                ActiveControllers.Add(controller);
+        }
+
+        static void CleanDeadControllers()
+        {
+            for (int i = ActiveControllers.Count - 1; i >= 0; i--)
+            {
+                UnderwaterEffectController controller = ActiveControllers[i];
+                if (controller == null || !controller.isActiveAndEnabled)
+                    ActiveControllers.RemoveAt(i);
             }
         }
     }

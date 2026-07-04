@@ -11,6 +11,10 @@ GameObject:
   - component: {fileID: 758733678355488657}
   - component: {fileID: 7935755935503712312}
   - component: {fileID: 4804828245532493699}
+  - component: {fileID: 8820462533981007101}
+  - component: {fileID: 8820462533981007102}
+  - component: {fileID: 8820462533981007104}
+  - component: {fileID: 8820462533981007103}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -66,7 +70,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30d6970280a6f47f5a74c8f051040bc1, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::GameJam.Player.PlayerAnimatorDriver
   _gameInput: {fileID: 0}
   _autoFindGameInput: 1
@@ -74,9 +78,83 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 2976021082453781143}
   _rotateVisualWithMovement: 1
   _keepVisualUprightWhenFacingLeft: 1
+  _uprightFlipToleranceDegrees: 18
   _rotationDegreesPerSecond: 540
   _flipSpriteWithHorizontalMovement: 0
   _movementDeadZone: 0.01
+--- !u!114 &8820462533981007101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546856456039530560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f7b9b2f6df34e8fbabf740e996d73c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Player.Cave.CavePlayerSkinController
+  _spriteRenderer: {fileID: 2976021082453781143}
+  _textureSet: {fileID: 11400000, guid: ef1c43fcda894bb6a4a9e5f02f0e18bb, type: 2}
+  _defaultSkin: 0
+  _currentSkin: 0
+--- !u!114 &8820462533981007102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546856456039530560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64a9238de11e4ab0a0ef847523c37d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Player.Cave.CavePlayerStageTransition
+  _skinController: {fileID: 8820462533981007101}
+  _targetSkin: 1
+  _transitionButton: {fileID: 0}
+  _fadeCanvasGroup: {fileID: 0}
+  _hideButtonAfterTransition: 1
+  _turbinaSpotLight: {fileID: 0}
+  _linternaSpotLight: {fileID: 0}
+  _fadeToBlackDuration: 0.45
+  _holdBlackDuration: 1
+  _fadeFromBlackDuration: 0.45
+--- !u!114 &8820462533981007104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546856456039530560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abe5e524666248959de647a97d6dd59d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Player.Cave.CavePlayerResetTransition
+  _fadeCanvasGroup: {fileID: 0}
+  _fadeToBlackDuration: 0.35
+  _holdBlackDuration: 0
+  _fadeFromBlackDuration: 0.35
+--- !u!114 &8820462533981007103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546856456039530560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35016856826a4918b68f1a21f70a487c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Player.Cave.CavePlayerTriggerTeleporter
+  _linternaTriggerId: LinternaON
+  _linternaTransition: {fileID: 8820462533981007102}
+  _linternaTarget: {fileID: 0}
+  _triggerLinternaOnlyOnce: 1
+  _initialTriggerId: InitialTriggers
+  _resetTransition: {fileID: 8820462533981007104}
+  _initialResetTarget: {fileID: 0}
 --- !u!1 &6340391017968483827
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,7 +234,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3d5b759a8239b438bbc728ab4e512c63, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
