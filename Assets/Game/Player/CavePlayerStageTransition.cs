@@ -55,10 +55,25 @@ namespace GameJam.Player.Cave
 
         public void StartTransition(Transform teleportTarget)
         {
-            if (_transitionRoutine != null || _skinController == null)
+            if (_transitionRoutine != null)
                 return;
 
+            ResolveSkinController();
             _transitionRoutine = StartCoroutine(TransitionRoutine(teleportTarget));
+        }
+
+        public void ApplyTransitionInstantly(Transform teleportTarget)
+        {
+            if (_transitionRoutine != null)
+            {
+                StopCoroutine(_transitionRoutine);
+                _transitionRoutine = null;
+            }
+
+            ResolveSkinController();
+            ApplyTransitionState(teleportTarget);
+            SetFadeAlpha(0f);
+            ApplyCompletedButtonState();
         }
 
         private IEnumerator TransitionRoutine(Transform teleportTarget)
@@ -68,28 +83,49 @@ namespace GameJam.Player.Cave
 
             yield return FadeTo(1f, _fadeToBlackDuration);
 
-            TeleportTo(teleportTarget);
-            _skinController.SetSkin(_targetSkin);
-            ApplyLinternaLightState();
+            ApplyTransitionState(teleportTarget);
 
             if (_holdBlackDuration > 0f)
                 yield return new WaitForSecondsRealtime(_holdBlackDuration);
 
             yield return FadeTo(0f, _fadeFromBlackDuration);
 
+            ApplyCompletedButtonState();
+            _transitionRoutine = null;
+        }
+
+        private void ApplyTransitionState(Transform teleportTarget)
+        {
+            Vector3 previousPlayerPosition = transform.position;
+            bool teleported = TeleportTo(teleportTarget);
+
+            if (_skinController != null)
+                _skinController.SetSkin(_targetSkin);
+
+            ApplyLinternaLightState();
+            if (teleported)
+                CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);
+        }
+
+        private void ApplyCompletedButtonState()
+        {
             if (_transitionButton != null)
             {
                 _transitionButton.gameObject.SetActive(!_hideButtonAfterTransition);
                 _transitionButton.interactable = !_hideButtonAfterTransition;
             }
-
-            _transitionRoutine = null;
         }
 
-        private void TeleportTo(Transform teleportTarget)
+        private void ResolveSkinController()
+        {
+            if (_skinController == null)
+                _skinController = GetComponent<CavePlayerSkinController>();
+        }
+
+        private bool TeleportTo(Transform teleportTarget)
         {
             if (teleportTarget == null)
-                return;
+                return false;
 
             if (TryGetComponent(out Rigidbody2D body))
             {
@@ -100,6 +136,7 @@ namespace GameJam.Player.Cave
 
             transform.position = teleportTarget.position;
             Physics2D.SyncTransforms();
+            return true;
         }
 
         private void ApplyLinternaLightState()

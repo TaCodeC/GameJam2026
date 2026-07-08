@@ -15,6 +15,15 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# Local OS/editor/Codex files
+.DS_Store
+**/.DS_Store
+.codex/
+.agents/
+.vscode/
+.idea/
+*.code-workspace
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta

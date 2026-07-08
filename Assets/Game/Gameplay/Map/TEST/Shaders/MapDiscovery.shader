@@ -27,11 +27,11 @@ Shader "GameJam/Map/Discovery"
             ZTest LEqual
             ZWrite [_ZWrite]
 
-            HLSLPROGRAM
+            CGPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "UnityCG.cginc"
 
             struct Attributes
             {
@@ -45,33 +45,28 @@ Shader "GameJam/Map/Discovery"
                 float2 uv : TEXCOORD0;
             };
 
-            TEXTURE2D(_MapTex);
-            SAMPLER(sampler_MapTex);
-            TEXTURE2D(_DiscoveryTex);
-            SAMPLER(sampler_DiscoveryTex);
-
-            CBUFFER_START(UnityPerMaterial)
-                half4 _HiddenColor;
-                half4 _RevealedTint;
-                half _MapAlphaClipThreshold;
-            CBUFFER_END
+            sampler2D _MapTex;
+            sampler2D _DiscoveryTex;
+            fixed4 _HiddenColor;
+            fixed4 _RevealedTint;
+            half _MapAlphaClipThreshold;
 
             Varyings Vert(Attributes input)
             {
                 Varyings output;
-                output.positionHCS = TransformObjectToHClip(input.positionOS.xyz);
+                output.positionHCS = UnityObjectToClipPos(input.positionOS);
                 output.uv = input.uv;
                 return output;
             }
 
-            half4 Frag(Varyings input) : SV_Target
+            fixed4 Frag(Varyings input) : SV_Target
             {
-                half reveal = SAMPLE_TEXTURE2D(_DiscoveryTex, sampler_DiscoveryTex, input.uv).r;
-                half4 mapColor = SAMPLE_TEXTURE2D(_MapTex, sampler_MapTex, input.uv) * _RevealedTint;
+                half reveal = tex2D(_DiscoveryTex, input.uv).r;
+                fixed4 mapColor = tex2D(_MapTex, input.uv) * _RevealedTint;
                 clip(mapColor.a - _MapAlphaClipThreshold);
                 return lerp(_HiddenColor, mapColor, saturate(reveal));
             }
-            ENDHLSL
+            ENDCG
         }
     }
 }

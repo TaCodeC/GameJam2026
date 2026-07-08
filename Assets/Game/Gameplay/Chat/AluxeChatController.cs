@@ -32,14 +32,15 @@ namespace GameJam.Gameplay.Chat
 
         private static readonly DialogueLine[] Dialogue =
         {
-            new DialogueLine(Speaker.Chaak, "Está prohibido el paso a partir de este punto."),
-            new DialogueLine(Speaker.Zaazil, "¿Qué eres y por qué no me dejas pasar? :0"),
-            new DialogueLine(Speaker.Chaak, "Soy Cháak, Alux guardián de este cenote."),
-            new DialogueLine(Speaker.Chaak, "Mi misión es ahuyentar a todo aquel que intente pasar y hacer daño a este recinto sagrado, así que te pido de la manera más pacífica posible que te retires."),
-            new DialogueLine(Speaker.Zaazil, "Espera, espera, me llamo Záazil y mi objetivo también es cuidar y preservar el cenote y todo lo que se encuentre dentro."),
-            new DialogueLine(Speaker.Zaazil, "¡Te lo juro! Dame una oportunidad para explorar y, si quieres, acompañarme y vigilarme para que veas que digo la verdad."),
-            new DialogueLine(Speaker.Chaak, "Está bien Záazil, acepto."),
-            new DialogueLine(Speaker.Chaak, "Pero te advierto que en cuanto hagas algo raro recibirás una maldición que los mismísimos dioses me permiten ejecutar sobre todo aquel que osa dañar la naturaleza.")
+            new DialogueLine(Speaker.Chaak, "¡hey! ¿qué haces con eso?"),
+            new DialogueLine(Speaker.Zaazil, "no te preocupes Cháak, sólo voy a dejar este propulsor por aquí…"),
+            new DialogueLine(Speaker.Chaak, "¿pero por qué?"),
+            new DialogueLine(Speaker.Zaazil, "es necesario para no dañar los restos, y necesito tener libres mis manos para poder medir y analizar"),
+            new DialogueLine(Speaker.Chaak, "¿medir y analizar?"),
+            new DialogueLine(Speaker.Zaazil, "¡ah! cierto, no te había explicado, nosotros somos un grupo de especialistas que se dedica a conservar y preservar el patrimonio subacuático del territorio mexicano… en pocas palabras, somos como guardianes de los vestigios de los antepasados."),
+            new DialogueLine(Speaker.Chaak, "wow… suena interesante."),
+            new DialogueLine(Speaker.Zaazil, "¡sí lo es! y claro, nuestra prioridad es dejar todo en su lugar, analizar in situ, y solo ex situ, osea afuera, lo que sea sumamente necesario."),
+            new DialogueLine(Speaker.Chaak, "eso está muy bien, es mejor dejar todo en su lugar y respetar los recintos sagrados… bueno, ¡sigamos! ahora confío en ti…")
         };
 
         [Header("References")]

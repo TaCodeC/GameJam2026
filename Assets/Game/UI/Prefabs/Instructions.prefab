@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Ten cuidado con las paredes!
+  m_text: Cuidado con las estalactitas y estalagmitas
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fe0d7e343a7b54642828ed0aac40f066, type: 2}
   m_sharedMaterial: {fileID: 5458968446659538696, guid: fe0d7e343a7b54642828ed0aac40f066, type: 2}
@@ -257,7 +257,7 @@ MonoBehaviour:
   _canvasGroup: {fileID: 7484465631821433196}
   _visibleDuration: 4
   _fadeDuration: 0.5
-  _playOnStart: 1
+  _playOnStart: 0
   _disableAfterFade: 0
 --- !u!225 &7484465631821433196
 CanvasGroup:

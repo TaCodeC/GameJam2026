@@ -15,6 +15,7 @@ namespace GameJam.Player.Cave
 
         [Header("Initial Reset")]
         [SerializeField] private string _initialTriggerId = "InitialTriggers";
+        [SerializeField] private string _initialCollisionId = "InitialColliders";
         [SerializeField] private CavePlayerResetTransition _resetTransition;
         [SerializeField] private Transform _initialResetTarget;
 
@@ -53,6 +54,18 @@ namespace GameJam.Player.Cave
             }
         }
 
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision == null || collision.collider == null)
+                return;
+
+            if (MatchesTrigger(collision.collider, _initialTriggerId)
+                || MatchesTrigger(collision.collider, _initialCollisionId))
+            {
+                TriggerInitialReset();
+            }
+        }
+
         private void TriggerLinterna()
         {
             if (_triggerLinternaOnlyOnce && _linternaTriggered)
@@ -68,28 +81,45 @@ namespace GameJam.Player.Cave
 
         private IEnumerator TriggerLinternaRoutine()
         {
-            yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.Linterna, true);
+            yield return CinematicSequencePlayer.Instance.PlayRoutine(
+                CinematicSequences.Linterna,
+                true,
+                "",
+                ApplyLinternaStageAtBlack);
 
+            _linternaRoutine = null;
+        }
+
+        private void ApplyLinternaStageAtBlack()
+        {
             if (_linternaTransition != null)
             {
-                _linternaTransition.StartTransition(_linternaTarget);
-                _linternaRoutine = null;
-                yield break;
+                _linternaTransition.ApplyTransitionInstantly(_linternaTarget);
+                return;
             }
 
+            Vector3 previousPlayerPosition = transform.position;
             TeleportTo(_linternaTarget);
-            _linternaRoutine = null;
+            CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);
         }
 
         private void TriggerInitialReset()
         {
+            if (_resetTransition == null)
+                _resetTransition = GetComponent<CavePlayerResetTransition>();
+
+            if (_resetTransition == null)
+                _resetTransition = gameObject.AddComponent<CavePlayerResetTransition>();
+
             if (_resetTransition != null)
             {
                 _resetTransition.StartReset(_initialResetTarget);
                 return;
             }
 
+            Vector3 previousPlayerPosition = transform.position;
             TeleportTo(_initialResetTarget);
+            CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);
         }
 
         private bool MatchesTrigger(Collider2D other, string triggerId)
@@ -100,7 +130,7 @@ namespace GameJam.Player.Cave
             Transform current = other.transform;
             while (current != null)
             {
-                if (current.name == triggerId || current.gameObject.tag == triggerId)
+                if (current.name.StartsWith(triggerId, System.StringComparison.Ordinal) || current.gameObject.tag == triggerId)
                     return true;
 
                 current = current.parent;
@@ -124,5 +154,6 @@ namespace GameJam.Player.Cave
             transform.position = target.position;
             Physics2D.SyncTransforms();
         }
+
     }
 }

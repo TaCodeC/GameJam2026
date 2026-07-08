@@ -1,9 +1,13 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public sealed class TimedCanvasFader : MonoBehaviour
 {
+    public const string DefaultSceneHintName = "Instructions";
+
     [Header("Canvas")]
     [SerializeField] private Canvas _canvas;
     [SerializeField] private CanvasGroup _canvasGroup;
@@ -15,6 +19,28 @@ public sealed class TimedCanvasFader : MonoBehaviour
     [SerializeField] private bool _disableAfterFade;
 
     private Coroutine _showRoutine;
+
+    public static bool ShowSceneHint(string hintName = DefaultSceneHintName)
+    {
+        bool shown = false;
+        Scene activeScene = SceneManager.GetActiveScene();
+        TimedCanvasFader[] faders = Resources.FindObjectsOfTypeAll<TimedCanvasFader>();
+
+        for (int i = 0; i < faders.Length; i++)
+        {
+            TimedCanvasFader fader = faders[i];
+            if (fader == null || fader.gameObject.scene != activeScene)
+                continue;
+
+            if (!string.Equals(fader.gameObject.name, hintName, StringComparison.Ordinal))
+                continue;
+
+            fader.Show();
+            shown = true;
+        }
+
+        return shown;
+    }
 
     private void Reset()
     {
@@ -30,7 +56,12 @@ public sealed class TimedCanvasFader : MonoBehaviour
     private void Start()
     {
         if (_playOnStart)
+        {
             Show();
+            return;
+        }
+
+        HideInstant();
     }
 
     public void Show()
@@ -39,6 +70,8 @@ public sealed class TimedCanvasFader : MonoBehaviour
 
         if (_canvasGroup == null)
             return;
+
+        SetVisible(true);
 
         if (_showRoutine != null)
             StopCoroutine(_showRoutine);

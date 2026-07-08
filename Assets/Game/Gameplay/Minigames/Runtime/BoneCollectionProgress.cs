@@ -120,6 +120,12 @@ namespace GameJam.Gameplay.Minigames
             if (portal == null)
                 portal = roots.AddComponent<CaveRootsPortalTrigger>();
 
+            if (portal == null)
+            {
+                Debug.LogWarning("[Bones] No se pudo crear el trigger de portal en las raices.", this);
+                return;
+            }
+
             portal.SetUnlocked(true);
         }
 

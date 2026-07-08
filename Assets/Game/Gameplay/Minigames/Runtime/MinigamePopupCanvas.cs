@@ -43,6 +43,7 @@ namespace GameJam.Gameplay.Minigames
         private UnityAction _closeAction;
         private bool _buttonsBound;
         private bool _handlingCompletion;
+        private bool _minigameAudioActive;
         private int _currentIndex = -1;
 
         public int CurrentIndex => _currentIndex;
@@ -70,6 +71,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void OnDisable()
         {
+            StopMinigameAudio();
             UnbindCompletionHandlers();
             UnbindButtons();
         }
@@ -152,6 +154,7 @@ namespace GameJam.Gameplay.Minigames
             _currentIndex = index;
             BindStateToPanel(panel);
             BindCompletionHandlers(panel);
+            StartMinigameAudio();
             _opened.Invoke(panel.Id);
             Debug.Log($"[Minigames] Opened mini game '{panel.Id}'.", this);
         }
@@ -163,6 +166,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void Hide(bool invokeEvent)
         {
+            StopMinigameAudio();
             UnbindCompletionHandlers();
             HidePanels();
 
@@ -185,6 +189,28 @@ namespace GameJam.Gameplay.Minigames
                 _closed.Invoke();
                 Debug.Log("[Minigames] Closed popup.", this);
             }
+        }
+
+        private void StartMinigameAudio()
+        {
+            if (_minigameAudioActive)
+            {
+                return;
+            }
+
+            _minigameAudioActive = true;
+            MinigameAudioController.Active.BeginMinigameAudio();
+        }
+
+        private void StopMinigameAudio()
+        {
+            if (!_minigameAudioActive)
+            {
+                return;
+            }
+
+            _minigameAudioActive = false;
+            MinigameAudioController.Active.EndMinigameAudio();
         }
 
         private void BindStateToPanel(MinigamePanel panel)

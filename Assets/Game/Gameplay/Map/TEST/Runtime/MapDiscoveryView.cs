@@ -6,7 +6,10 @@ namespace GameJam.Gameplay.Map
     [DisallowMultipleComponent]
     public sealed class MapDiscoveryView : MonoBehaviour
     {
+        private const string DiscoveryMaterialResourcePath = "MapDiscoveryUiMaterial";
+
         private static readonly int MapTextureId = Shader.PropertyToID("_MapTex");
+        private static readonly int MainTextureId = Shader.PropertyToID("_MainTex");
         private static readonly int DiscoveryTextureId = Shader.PropertyToID("_DiscoveryTex");
         private static readonly int HiddenColorId = Shader.PropertyToID("_HiddenColor");
         private static readonly int RevealedTintId = Shader.PropertyToID("_RevealedTint");
@@ -117,11 +120,12 @@ namespace GameJam.Gameplay.Map
 
             Shader shader = _discoveryShader != null
                 ? _discoveryShader
-                : Shader.Find("GameJam/Map/Discovery");
+                : ResolveDiscoveryShader();
 
-            if (shader == null)
+            if (shader == null || !shader.isSupported)
             {
-                Debug.LogError("Map discovery shader was not found.", this);
+                Debug.LogWarning("Map discovery shader was not found or is not supported. Showing map texture without shader masking.", this);
+                BindTextures();
                 return;
             }
 
@@ -239,7 +243,7 @@ namespace GameJam.Gameplay.Map
 
         private void BindTextures()
         {
-            if (_runtimeMaterial == null || _discovery == null || !_discovery.IsInitialized)
+            if (_discovery == null || !_discovery.IsInitialized)
             {
                 return;
             }
@@ -248,13 +252,31 @@ namespace GameJam.Gameplay.Map
                 ? _mapTextureOverride
                 : _discovery.Definition.TraversableMask;
 
-            _runtimeMaterial.SetTexture(MapTextureId, mapTexture);
-            _runtimeMaterial.SetTexture(DiscoveryTextureId, _discovery.DiscoveryTexture);
-
             if (_targetRawImage != null)
             {
                 _targetRawImage.texture = mapTexture;
             }
+
+            if (_runtimeMaterial == null)
+            {
+                return;
+            }
+
+            _runtimeMaterial.SetTexture(MainTextureId, mapTexture);
+            _runtimeMaterial.SetTexture(MapTextureId, mapTexture);
+            _runtimeMaterial.SetTexture(DiscoveryTextureId, _discovery.DiscoveryTexture);
+        }
+
+        private static Shader ResolveDiscoveryShader()
+        {
+            Shader shader = Shader.Find("GameJam/Map/Discovery");
+            if (shader != null)
+            {
+                return shader;
+            }
+
+            Material material = Resources.Load<Material>(DiscoveryMaterialResourcePath);
+            return material != null ? material.shader : null;
         }
 
         private void RestoreTargets()
