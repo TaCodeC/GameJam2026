@@ -120,3 +120,7 @@ InitTestScene*.unity*
 /Assets/Game/Player/Editor/PlayerAnimationAssetBuilder.cs.meta
 /Assets/Game/Player/Editor/PlatformAnimationAssetBuilder.cs
 /Assets/Game/Player/Editor/PlatformAnimationAssetBuilder.cs.meta
+
+# Local-only cinematic test toolbar
+/Assets/_LocalTestTools/
+/Assets/_LocalTestTools.meta

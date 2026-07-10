@@ -16,7 +16,7 @@ MonoBehaviour:
   _maskChannel: 0
   _walkableThreshold: 0.5
   _worldPlane: 0
-  _worldSize: {x: 100, y: 50}
+  _worldSize: {x: 158.578, y: 36.204}
   _flipWorldX: 0
   _flipWorldY: 0
   _discoveryResolution: {x: 512, y: 288}

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using GameJam.Audio;
 using UnityEngine;
 
 namespace GameJam.UI
@@ -10,7 +10,6 @@ namespace GameJam.UI
 
         private static InstructionsAudioController _active;
 
-        private readonly List<AudioSource> _pausedLevelSources = new();
         private AudioSource _instructionsSource;
         private AudioClip _instructionsClip;
         private int _playDepth;
@@ -101,30 +100,12 @@ namespace GameJam.UI
 
         private void PauseLevelMusicSources()
         {
-            _pausedLevelSources.Clear();
-            AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-
-            for (int i = 0; i < sources.Length; i++)
-            {
-                AudioSource source = sources[i];
-                if (source == null || source == _instructionsSource || !source.isPlaying || !source.loop)
-                    continue;
-
-                source.Pause();
-                _pausedLevelSources.Add(source);
-            }
+            LoopingMusicPauseCoordinator.PauseFor(this, _instructionsSource);
         }
 
         private void ResumeLevelMusicSources()
         {
-            for (int i = 0; i < _pausedLevelSources.Count; i++)
-            {
-                AudioSource source = _pausedLevelSources[i];
-                if (source != null)
-                    source.UnPause();
-            }
-
-            _pausedLevelSources.Clear();
+            LoopingMusicPauseCoordinator.ReleaseFor(this);
         }
     }
 }

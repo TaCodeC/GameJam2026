@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using GameJam.Audio;
 using UnityEngine;
 
 namespace GameJam.Gameplay.Minigames
@@ -10,7 +10,6 @@ namespace GameJam.Gameplay.Minigames
 
         private static MinigameAudioController _active;
 
-        private readonly List<AudioSource> _pausedLevelSources = new();
         private AudioSource _minigameSource;
         private AudioClip _minigameClip;
         private int _playDepth;
@@ -101,30 +100,12 @@ namespace GameJam.Gameplay.Minigames
 
         private void PauseLevelMusicSources()
         {
-            _pausedLevelSources.Clear();
-            AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-
-            for (int i = 0; i < sources.Length; i++)
-            {
-                AudioSource source = sources[i];
-                if (source == null || source == _minigameSource || !source.isPlaying || !source.loop)
-                    continue;
-
-                source.Pause();
-                _pausedLevelSources.Add(source);
-            }
+            LoopingMusicPauseCoordinator.PauseFor(this, _minigameSource);
         }
 
         private void ResumeLevelMusicSources()
         {
-            for (int i = 0; i < _pausedLevelSources.Count; i++)
-            {
-                AudioSource source = _pausedLevelSources[i];
-                if (source != null)
-                    source.UnPause();
-            }
-
-            _pausedLevelSources.Clear();
+            LoopingMusicPauseCoordinator.ReleaseFor(this);
         }
     }
 }

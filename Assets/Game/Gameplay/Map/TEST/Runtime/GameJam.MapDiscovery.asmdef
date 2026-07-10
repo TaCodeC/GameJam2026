@@ -2,7 +2,10 @@
     "name": "GameJam.MapDiscovery",
     "rootNamespace": "GameJam.Gameplay.Map",
     "references": [
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "DynControls.Runtime",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

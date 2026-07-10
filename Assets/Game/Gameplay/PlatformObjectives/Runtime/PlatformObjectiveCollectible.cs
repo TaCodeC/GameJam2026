@@ -1,3 +1,4 @@
+using GameJam.Audio;
 using UnityEngine;
 
 namespace GameJam.Gameplay.PlatformObjectives
@@ -55,6 +56,8 @@ namespace GameJam.Gameplay.PlatformObjectives
                 objective.RegisterCollectible(this);
             else
                 Debug.LogWarning($"[PlatformObjectiveCollectible] No encontre una casita Alux activa para registrar {ItemId}.", this);
+
+            GameAudioSfx.PlayAluxeCoin();
 
             if (_disableOnCollected)
                 gameObject.SetActive(false);

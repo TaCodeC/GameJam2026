@@ -1,9 +1,10 @@
 using System.Collections;
+using GameJam.Audio;
 using GameJam.Gameplay.Map;
 using GameJam.Player;
+using GameJam.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace GameJam.Gameplay.EndChase
 {
@@ -30,9 +31,6 @@ namespace GameJam.Gameplay.EndChase
 
         [Header("Scene Transition")]
         [SerializeField] private string _menuSceneName = "Menu";
-        [SerializeField, Min(0f)] private float _fadeOutDuration = 0.45f;
-        [SerializeField, Min(0f)] private float _blackHoldDuration = 0.12f;
-        [SerializeField, Min(0f)] private float _fadeInDuration = 0.45f;
 
         private Transform _player;
         private GameObject _looter;
@@ -70,6 +68,8 @@ namespace GameJam.Gameplay.EndChase
         private IEnumerator Start()
         {
             yield return null;
+            yield return WaitForInstructionsToFinish();
+            SceneMusicController.Active.PlayEndLevelMusic();
             InitializeChase();
         }
 
@@ -107,6 +107,39 @@ namespace GameJam.Gameplay.EndChase
 
             _looterAi = _looter.AddComponent<EndLooterFleeAI>();
             _looterAi.Configure(_player, _map, _looterMoveSpeed);
+        }
+
+        private IEnumerator WaitForInstructionsToFinish()
+        {
+            while (HasRunningInstructions())
+                yield return null;
+        }
+
+        private bool HasRunningInstructions()
+        {
+            Scene scene = gameObject.scene;
+            SceneInstructionsFlow[] flows = FindObjectsByType<SceneInstructionsFlow>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < flows.Length; i++)
+            {
+                SceneInstructionsFlow flow = flows[i];
+                if (flow != null && flow.gameObject.scene == scene && !flow.IsFinished)
+                    return true;
+            }
+
+            GameObject[] objects = Resources.FindObjectsOfTypeAll<GameObject>();
+            for (int i = 0; i < objects.Length; i++)
+            {
+                GameObject candidate = objects[i];
+                if (candidate != null
+                    && candidate.scene == scene
+                    && candidate.name == "Instructions_First"
+                    && candidate.activeInHierarchy)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void PrepareLooterClone(GameObject looter)
@@ -227,19 +260,14 @@ namespace GameJam.Gameplay.EndChase
             DisablePlayerInput(_player);
             DontDestroyOnLoad(gameObject);
 
-            CanvasGroup fade = CreatePersistentFadeOverlay();
-            yield return FadeTo(fade, 1f, _fadeOutDuration);
-
-            if (_blackHoldDuration > 0f)
-                yield return new WaitForSecondsRealtime(_blackHoldDuration);
-
-            SceneManager.LoadScene(_menuSceneName);
-            yield return null;
-
-            yield return FadeTo(fade, 0f, _fadeInDuration);
-
-            if (fade != null)
-                Destroy(fade.gameObject);
+            ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.EndFinaleComic);
+            if (comicCinematic != null)
+                yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic, _menuSceneName);
+            else
+                yield return CinematicSequencePlayer.Instance.PlayRoutine(
+                    CinematicSequences.EndFinale,
+                    false,
+                    _menuSceneName);
 
             Destroy(gameObject);
         }
@@ -273,66 +301,6 @@ namespace GameJam.Gameplay.EndChase
 
             body.linearVelocity = Vector2.zero;
             body.angularVelocity = 0f;
-        }
-
-        private static CanvasGroup CreatePersistentFadeOverlay()
-        {
-            GameObject root = new GameObject("End Chase Fade", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup));
-            DontDestroyOnLoad(root);
-
-            Canvas canvas = root.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = short.MaxValue;
-
-            CanvasScaler scaler = root.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
-
-            CanvasGroup canvasGroup = root.GetComponent<CanvasGroup>();
-            canvasGroup.alpha = 0f;
-            canvasGroup.blocksRaycasts = true;
-            canvasGroup.interactable = false;
-
-            GameObject imageObject = new GameObject("Black", typeof(RectTransform), typeof(Image));
-            imageObject.transform.SetParent(root.transform, false);
-
-            RectTransform rect = imageObject.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = Vector2.zero;
-
-            Image image = imageObject.GetComponent<Image>();
-            image.color = Color.black;
-            image.raycastTarget = true;
-
-            return canvasGroup;
-        }
-
-        private static IEnumerator FadeTo(CanvasGroup canvasGroup, float targetAlpha, float duration)
-        {
-            if (canvasGroup == null)
-                yield break;
-
-            float startAlpha = canvasGroup.alpha;
-            if (duration <= 0f)
-            {
-                canvasGroup.alpha = targetAlpha;
-                yield break;
-            }
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, Mathf.Clamp01(elapsed / duration));
-                yield return null;
-            }
-
-            canvasGroup.alpha = targetAlpha;
         }
 
         private static Transform FindPlayer()

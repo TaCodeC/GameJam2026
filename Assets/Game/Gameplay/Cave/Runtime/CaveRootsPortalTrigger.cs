@@ -79,7 +79,11 @@ namespace GameJam.Gameplay.Cave
 
         private IEnumerator EnterRootsRoutine()
         {
-            yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.RootsPortal, false, _nextSceneName);
+            ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.RootsPortalComic);
+            if (comicCinematic != null)
+                yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic, _nextSceneName);
+            else
+                yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.RootsPortal, false, _nextSceneName);
         }
 
         private void EnsureTriggerCollider()

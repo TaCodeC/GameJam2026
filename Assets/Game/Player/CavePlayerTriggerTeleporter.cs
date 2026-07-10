@@ -1,4 +1,6 @@
 using System.Collections;
+using GameJam.Audio;
+using GameJam.Gameplay.Map;
 using GameJam.UI;
 using UnityEngine;
 
@@ -11,6 +13,7 @@ namespace GameJam.Player.Cave
         [SerializeField] private string _linternaTriggerId = "LinternaON";
         [SerializeField] private CavePlayerStageTransition _linternaTransition;
         [SerializeField] private Transform _linternaTarget;
+        [SerializeField] private MapDiscoveryStageSwitcher _mapDiscoveryStageSwitcher;
         [SerializeField] private bool _triggerLinternaOnlyOnce = true;
 
         [Header("Initial Reset")]
@@ -38,6 +41,9 @@ namespace GameJam.Player.Cave
 
             if (_resetTransition == null)
                 _resetTransition = GetComponent<CavePlayerResetTransition>();
+
+            if (_mapDiscoveryStageSwitcher == null)
+                _mapDiscoveryStageSwitcher = FindFirstObjectByType<MapDiscoveryStageSwitcher>();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -81,11 +87,22 @@ namespace GameJam.Player.Cave
 
         private IEnumerator TriggerLinternaRoutine()
         {
-            yield return CinematicSequencePlayer.Instance.PlayRoutine(
-                CinematicSequences.Linterna,
-                true,
-                "",
-                ApplyLinternaStageAtBlack);
+            ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.LinternaComic);
+            if (comicCinematic != null)
+            {
+                yield return ComicCinematicPlayer.Instance.PlayRoutine(
+                    comicCinematic,
+                    "",
+                    ApplyLinternaStageAtBlack);
+            }
+            else
+            {
+                yield return CinematicSequencePlayer.Instance.PlayRoutine(
+                    CinematicSequences.Linterna,
+                    true,
+                    "",
+                    ApplyLinternaStageAtBlack);
+            }
 
             _linternaRoutine = null;
         }
@@ -95,12 +112,18 @@ namespace GameJam.Player.Cave
             if (_linternaTransition != null)
             {
                 _linternaTransition.ApplyTransitionInstantly(_linternaTarget);
-                return;
+            }
+            else
+            {
+                Vector3 previousPlayerPosition = transform.position;
+                TeleportTo(_linternaTarget);
+                CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);
             }
 
-            Vector3 previousPlayerPosition = transform.position;
-            TeleportTo(_linternaTarget);
-            CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);
+            if (_mapDiscoveryStageSwitcher != null)
+            {
+                _mapDiscoveryStageSwitcher.ApplyLinternaStage();
+            }
         }
 
         private void TriggerInitialReset()
@@ -113,10 +136,15 @@ namespace GameJam.Player.Cave
 
             if (_resetTransition != null)
             {
+                if (_resetTransition.IsRunning)
+                    return;
+
+                GameAudioSfx.PlayRandomStalactite();
                 _resetTransition.StartReset(_initialResetTarget);
                 return;
             }
 
+            GameAudioSfx.PlayRandomStalactite();
             Vector3 previousPlayerPosition = transform.position;
             TeleportTo(_initialResetTarget);
             CaveCameraSnapper.SnapAfterTeleport(transform, previousPlayerPosition);

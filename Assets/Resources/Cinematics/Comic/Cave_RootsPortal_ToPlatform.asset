@@ -1,0 +1,221 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4e8d5a3698f478189726abb8bb16911, type: 3}
+  m_Name: Cave_RootsPortal_ToPlatform
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.UI.ComicCinematicAsset
+  _defaultPage: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+  _shots:
+  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.35
+      y: 0.27
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 3
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.29
+      y: -0.21
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.07
+      y: -0.04
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 1.2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.31
+      y: 0.28
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 2.2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.29
+      y: 0.28
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 2.2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.28
+      y: -0.23
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 2.2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.29
+      y: -0.23
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 4
+    _holdDuration: 0
+    _zoom: 2.2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.27
+      y: 0.26
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 0
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 1
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.02
+      y: 0.26
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 2
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.26
+      y: 0.26
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 2
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.28
+      y: -0.24
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 2
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: -0.04
+      y: -0.24
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 2
+    _holdDuration: 0
+    _zoom: 2
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  - _pageOverride: {fileID: 21300000, guid: f2d332bb2af040599890e60bca126002, type: 3}
+    _normalizedFocus:
+      serializedVersion: 2
+      x: 0.24
+      y: -0.24
+      width: 1
+      height: 1
+    _zoomOffset: {x: 0, y: 0}
+    _moveDuration: 2
+    _holdDuration: 0
+    _zoom: 1.8
+    _fadeThroughBlackDuration: 0
+    _transition: 0
+    _ease: 1
+    _advanceMode: 2
+  _liveUpdateWhilePlaying: 1
+  _pauseGame: 0
+  _weakenUnderwater: 0
+  _backgroundAlpha: 1
+  _initialFadeDuration: 0.55
+  _outroFadeDuration: 0.55
+  _defaultMoveDuration: 1.1
+  _defaultHoldDuration: 2.2
+  _defaultFadeThroughBlackDuration: 0.42
+  _defaultZoom: 1.05

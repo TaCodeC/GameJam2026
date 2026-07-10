@@ -8,6 +8,8 @@ namespace GameJam.Gameplay.Map
     {
         [Header("Map")]
         [SerializeField] private MapDefinition _definition;
+        [Tooltip("Optional transform used as the map center/rotation. Leave empty to use this GameObject.")]
+        [SerializeField] private Transform _worldTransformOverride;
 
         [Header("Tracking")]
         [SerializeField] private Transform _trackedTransform;
@@ -33,6 +35,9 @@ namespace GameJam.Gameplay.Map
         private bool _initialized;
         private bool _warnedMissingTrackedTransform;
         private bool _warnedTrackedTransformOutsideMap;
+        private bool _hasRuntimeWorldPoseOverride;
+        private Vector3 _runtimeWorldOriginPosition;
+        private Quaternion _runtimeWorldOriginRotation = Quaternion.identity;
 
         public event Action MapChanged;
         public event Action DiscoveryChanged;
@@ -40,6 +45,7 @@ namespace GameJam.Gameplay.Map
         public MapDefinition Definition => _definition;
         public Texture2D DiscoveryTexture => _discoveryTexture;
         public Transform TrackedTransform => _trackedTransform;
+        public Transform WorldTransform => ResolveWorldTransform();
         public bool IsInitialized => _initialized;
         public float DiscoveredFraction => SafeFraction(_discoveredCellCount, _walkableCellCount);
         public float VisitedFraction => SafeFraction(_visitedCellCount, _walkableCellCount);
@@ -78,6 +84,37 @@ namespace GameJam.Gameplay.Map
 
             _definition = definition;
             Initialize();
+        }
+
+        public void SetWorldTransformOverride(Transform worldTransform)
+        {
+            if (_worldTransformOverride == worldTransform)
+            {
+                return;
+            }
+
+            _worldTransformOverride = worldTransform;
+            _hasRuntimeWorldPoseOverride = false;
+            _hasLastTrackedPosition = false;
+            _warnedTrackedTransformOutsideMap = false;
+        }
+
+        public void SetWorldPoseOverride(Vector3 worldOriginPosition, Quaternion worldOriginRotation)
+        {
+            _worldTransformOverride = null;
+            _hasRuntimeWorldPoseOverride = true;
+            _runtimeWorldOriginPosition = worldOriginPosition;
+            _runtimeWorldOriginRotation = worldOriginRotation;
+            _hasLastTrackedPosition = false;
+            _warnedTrackedTransformOutsideMap = false;
+        }
+
+        public void ClearWorldPoseOverride()
+        {
+            _worldTransformOverride = null;
+            _hasRuntimeWorldPoseOverride = false;
+            _hasLastTrackedPosition = false;
+            _warnedTrackedTransformOutsideMap = false;
         }
 
         public void SetTrackedTransform(Transform trackedTransform)
@@ -217,7 +254,8 @@ namespace GameJam.Gameplay.Map
                 return false;
             }
 
-            Vector3 local = Quaternion.Inverse(transform.rotation) * (worldPosition - transform.position);
+            ResolveWorldPose(out Vector3 originPosition, out Quaternion originRotation);
+            Vector3 local = Quaternion.Inverse(originRotation) * (worldPosition - originPosition);
             Vector2 point = _definition.WorldPlane == MapWorldPlane.XY
                 ? new Vector2(local.x, local.y)
                 : new Vector2(local.x, local.z);
@@ -483,9 +521,10 @@ namespace GameJam.Gameplay.Map
             }
 
             _warnedTrackedTransformOutsideMap = true;
+            ResolveWorldPose(out Vector3 originPosition, out _);
             Debug.LogWarning(
                 $"Tracked position {worldPosition} is outside map '{_definition.name}'. " +
-                $"Map center is {transform.position} and world size is {_definition.WorldSize}.",
+                $"Map center is {originPosition} and world size is {_definition.WorldSize}.",
                 this);
         }
 
@@ -503,9 +542,29 @@ namespace GameJam.Gameplay.Map
                 : new Vector3(size.x, 0.05f, size.y);
 
             Matrix4x4 previousMatrix = Gizmos.matrix;
-            Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+            ResolveWorldPose(out Vector3 originPosition, out Quaternion originRotation);
+            Gizmos.matrix = Matrix4x4.TRS(originPosition, originRotation, Vector3.one);
             Gizmos.DrawWireCube(Vector3.zero, gizmoSize);
             Gizmos.matrix = previousMatrix;
+        }
+
+        private Transform ResolveWorldTransform()
+        {
+            return _worldTransformOverride != null ? _worldTransformOverride : transform;
+        }
+
+        private void ResolveWorldPose(out Vector3 originPosition, out Quaternion originRotation)
+        {
+            if (_hasRuntimeWorldPoseOverride)
+            {
+                originPosition = _runtimeWorldOriginPosition;
+                originRotation = _runtimeWorldOriginRotation;
+                return;
+            }
+
+            Transform worldTransform = ResolveWorldTransform();
+            originPosition = worldTransform.position;
+            originRotation = worldTransform.rotation;
         }
     }
 }

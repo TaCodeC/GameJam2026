@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,8 +20,21 @@ public sealed class TimedCanvasFader : MonoBehaviour
     [SerializeField] private bool _disableAfterFade;
 
     private Coroutine _showRoutine;
+    private TMP_Text[] _messageTexts;
+    private string[] _originalMessages;
+    private bool _hasMessageOverride;
 
     public static bool ShowSceneHint(string hintName = DefaultSceneHintName)
+    {
+        return ShowSceneHintInternal(hintName, null);
+    }
+
+    public static bool ShowSceneHintMessage(string message, string hintName = DefaultSceneHintName)
+    {
+        return ShowSceneHintInternal(hintName, message);
+    }
+
+    private static bool ShowSceneHintInternal(string hintName, string message)
     {
         bool shown = false;
         Scene activeScene = SceneManager.GetActiveScene();
@@ -35,7 +49,11 @@ public sealed class TimedCanvasFader : MonoBehaviour
             if (!string.Equals(fader.gameObject.name, hintName, StringComparison.Ordinal))
                 continue;
 
-            fader.Show();
+            if (string.IsNullOrEmpty(message))
+                fader.Show();
+            else
+                fader.Show(message);
+
             shown = true;
         }
 
@@ -66,6 +84,18 @@ public sealed class TimedCanvasFader : MonoBehaviour
 
     public void Show()
     {
+        RestoreOriginalMessages();
+        ShowResolved();
+    }
+
+    public void Show(string message)
+    {
+        ApplyMessageOverride(message);
+        ShowResolved();
+    }
+
+    private void ShowResolved()
+    {
         ResolveCanvasGroup();
 
         if (_canvasGroup == null)
@@ -94,6 +124,7 @@ public sealed class TimedCanvasFader : MonoBehaviour
 
         SetVisible(false);
         SetAlpha(0f);
+        RestoreOriginalMessages();
     }
 
     private IEnumerator ShowRoutine()
@@ -105,6 +136,7 @@ public sealed class TimedCanvasFader : MonoBehaviour
             yield return new WaitForSecondsRealtime(_visibleDuration);
 
         yield return FadeTo(0f, _fadeDuration);
+        RestoreOriginalMessages();
 
         if (_disableAfterFade)
         {
@@ -151,6 +183,50 @@ public sealed class TimedCanvasFader : MonoBehaviour
 
         if (_canvasGroup == null && _canvas != null)
             _canvasGroup = _canvas.gameObject.AddComponent<CanvasGroup>();
+    }
+
+    private void ApplyMessageOverride(string message)
+    {
+        ResolveMessageTexts();
+        if (_messageTexts == null || _messageTexts.Length == 0)
+            return;
+
+        if (_originalMessages == null || _originalMessages.Length != _messageTexts.Length)
+        {
+            _originalMessages = new string[_messageTexts.Length];
+            for (int i = 0; i < _messageTexts.Length; i++)
+                _originalMessages[i] = _messageTexts[i] != null ? _messageTexts[i].text : string.Empty;
+        }
+
+        for (int i = 0; i < _messageTexts.Length; i++)
+        {
+            if (_messageTexts[i] != null)
+                _messageTexts[i].text = message;
+        }
+
+        _hasMessageOverride = true;
+    }
+
+    private void RestoreOriginalMessages()
+    {
+        if (!_hasMessageOverride || _originalMessages == null)
+            return;
+
+        ResolveMessageTexts();
+        int count = Mathf.Min(_messageTexts.Length, _originalMessages.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (_messageTexts[i] != null)
+                _messageTexts[i].text = _originalMessages[i];
+        }
+
+        _hasMessageOverride = false;
+    }
+
+    private void ResolveMessageTexts()
+    {
+        if (_messageTexts == null || _messageTexts.Length == 0)
+            _messageTexts = GetComponentsInChildren<TMP_Text>(true);
     }
 
     private void SetVisible(bool visible)

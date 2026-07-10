@@ -17,6 +17,8 @@ namespace GameJam.Gameplay.Minigames
         [SerializeField] private string _rootsObjectName = "Raices";
         [SerializeField] private Color _rootsMarkerColor = new Color(1f, 0.82f, 0.16f, 1f);
         [SerializeField] private bool _playAllBonesCinematic = true;
+        [SerializeField] private string _allBonesMapMessage = "Mira el mapa!";
+        [SerializeField] private bool _showAllBonesMapMessage = true;
 
         private static BoneCollectionProgress _active;
 
@@ -89,9 +91,16 @@ namespace GameJam.Gameplay.Minigames
             _allBonesSequenceStarted = true;
 
             if (_playAllBonesCinematic)
-                yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.AllBonesCollected);
+            {
+                ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.AllBonesCollectedComic);
+                if (comicCinematic != null)
+                    yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic);
+                else
+                    yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.AllBonesCollected);
+            }
 
             UnlockRoots();
+            ShowAllBonesMapMessage();
         }
 
         private void UnlockRoots()
@@ -127,6 +136,14 @@ namespace GameJam.Gameplay.Minigames
             }
 
             portal.SetUnlocked(true);
+        }
+
+        private void ShowAllBonesMapMessage()
+        {
+            if (!_showAllBonesMapMessage)
+                return;
+
+            TimedCanvasFader.ShowSceneHintMessage(_allBonesMapMessage);
         }
 
         private GameObject FindRootsObject()

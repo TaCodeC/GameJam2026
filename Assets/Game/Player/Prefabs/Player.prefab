@@ -151,6 +151,7 @@ MonoBehaviour:
   _linternaTriggerId: LinternaON
   _linternaTransition: {fileID: 8820462533981007102}
   _linternaTarget: {fileID: 0}
+  _mapDiscoveryStageSwitcher: {fileID: 0}
   _triggerLinternaOnlyOnce: 1
   _initialTriggerId: InitialTriggers
   _resetTransition: {fileID: 8820462533981007104}

@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using GameJam.Gameplay.Minigames;
+using GameJam.Audio;
 using GameJam.Rendering.Underwater;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,6 +23,7 @@ namespace GameJam.UI
         [SerializeField, Min(0.25f)] private float _longSequenceAutoAdvanceSeconds = 8f;
         [SerializeField, Range(0f, 1f)] private float _underwaterWeakenMultiplier = 0.28f;
         [SerializeField] private int _sortingOrder = 3000;
+        [SerializeField] private bool _pauseGame;
 
         private static CinematicSequencePlayer _instance;
         private static bool s_sceneLoadRevealPending;
@@ -33,11 +34,16 @@ namespace GameJam.UI
         private CanvasGroup _fadeGroup;
         private Image _image;
         private RectTransform _imageRect;
+        private CinematicSideSmokeFadeOverlay _sideSmokeFadeOverlay;
         private float _previousTimeScale = 1f;
         private float _inputBlockedUntil;
         private NavigationDirection _navigationDirection = NavigationDirection.Next;
+        private NavigationDirection _requestedNavigationDirection = NavigationDirection.Next;
+        private bool _navigationRequestPending;
+        private bool _hasImmediateCover;
         private bool _isPlaying;
         private bool _isFading;
+        private bool _currentPausesGame;
         private bool _cinematicAudioActive;
 
         public static CinematicSequencePlayer Instance
@@ -99,15 +105,25 @@ namespace GameJam.UI
             if (_isPlaying)
             {
                 RestoreUnderwater();
-                Time.timeScale = _previousTimeScale;
+
+                if (_currentPausesGame)
+                    Time.timeScale = _previousTimeScale;
             }
 
+            _sideSmokeFadeOverlay?.Dispose();
             StopCinematicAudio();
         }
 
         public void Play(string[] resourceNames, bool weakenUnderwater = false)
         {
             StartCoroutine(PlayRoutine(resourceNames, weakenUnderwater));
+        }
+
+        public void CoverScreenImmediately()
+        {
+            BuildCanvas();
+            ForceFadeBlack();
+            _hasImmediateCover = true;
         }
 
         public IEnumerator PlayRoutine(
@@ -123,10 +139,16 @@ namespace GameJam.UI
                 yield return null;
 
             _isPlaying = true;
+            _currentPausesGame = _pauseGame;
+            bool useImmediateCover = _hasImmediateCover;
+            _hasImmediateCover = false;
             BuildCanvas();
             ResetCanvasState();
             _previousTimeScale = Time.timeScale;
-            Time.timeScale = 0f;
+
+            if (_currentPausesGame)
+                Time.timeScale = 0f;
+
             StartCinematicAudio();
 
             AsyncOperation loadOperation = null;
@@ -141,10 +163,16 @@ namespace GameJam.UI
                 WeakenUnderwater();
 
             int slideIndex = 0;
-            yield return Fade(_fadeGroup, 1f, _initialFadeDuration, true);
+            if (useImmediateCover)
+                ForceFadeBlack();
+            else
+                yield return Fade(_fadeGroup, 1f, _initialFadeDuration, true);
+
             _imageGroup.gameObject.SetActive(true);
             _imageGroup.blocksRaycasts = true;
+            _imageGroup.interactable = true;
             _imageGroup.alpha = 1f;
+            SetSideFadeVisible(true);
             SetSlide(resourceNames[slideIndex]);
             yield return Fade(_fadeGroup, 0f, _fadeDuration, true);
 
@@ -188,7 +216,9 @@ namespace GameJam.UI
 
             if (loadOperation != null)
             {
-                Time.timeScale = _previousTimeScale;
+                if (_currentPausesGame)
+                    Time.timeScale = _previousTimeScale;
+
                 s_sceneLoadRevealPending = true;
                 loadOperation.allowSceneActivation = true;
                 while (!loadOperation.isDone)
@@ -199,10 +229,14 @@ namespace GameJam.UI
             }
 
             yield return Fade(_fadeGroup, 0f, _fadeDuration, true);
-            Time.timeScale = _previousTimeScale;
+
+            if (_currentPausesGame)
+                Time.timeScale = _previousTimeScale;
+
             HideFadeGroup();
             StopCinematicAudio();
             _isPlaying = false;
+            _currentPausesGame = false;
         }
 
         private IEnumerator RevealLoadedSceneRoutine()
@@ -242,12 +276,16 @@ namespace GameJam.UI
             StopCinematicAudio();
             _isFading = false;
             _isPlaying = false;
+            _currentPausesGame = false;
         }
 
         private void BuildCanvas()
         {
             if (_imageGroup != null && _fadeGroup != null && _image != null)
+            {
+                EnsureSideSmokeFadeOverlay(_imageGroup.transform);
                 return;
+            }
 
             GameObject canvasObject = new GameObject("Cinematic Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasObject.transform.SetParent(transform, false);
@@ -275,6 +313,7 @@ namespace GameJam.UI
             _imageGroup.blocksRaycasts = false;
             _imageGroup.interactable = false;
             _imageGroup.gameObject.SetActive(false);
+            EnsureSideSmokeFadeOverlay(_imageGroup.transform);
 
             _fadeGroup = CreateGroup(canvasObject.transform, "Black Fade");
             Image fadeImage = _fadeGroup.GetComponent<Image>();
@@ -327,8 +366,10 @@ namespace GameJam.UI
             if (_imageRect != null)
                 Center(_imageRect);
 
+            SetSideFadeVisible(false);
             _isFading = false;
             _inputBlockedUntil = 0f;
+            _navigationRequestPending = false;
         }
 
         private void HideImageGroup()
@@ -340,6 +381,7 @@ namespace GameJam.UI
             _imageGroup.blocksRaycasts = false;
             _imageGroup.interactable = false;
             _imageGroup.gameObject.SetActive(false);
+            SetSideFadeVisible(false);
         }
 
         private void ForceFadeBlack()
@@ -362,6 +404,20 @@ namespace GameJam.UI
             _fadeGroup.blocksRaycasts = false;
             _fadeGroup.interactable = false;
             _fadeGroup.gameObject.SetActive(false);
+        }
+
+        private void EnsureSideSmokeFadeOverlay(Transform parent)
+        {
+            _sideSmokeFadeOverlay ??= CinematicSideSmokeFadeOverlay.Create(
+                parent,
+                RequestNextSlide,
+                RequestPreviousSlide,
+                this);
+        }
+
+        private void SetSideFadeVisible(bool visible)
+        {
+            _sideSmokeFadeOverlay?.SetVisible(visible);
         }
 
         private static void ClearResidualBlackFades()
@@ -471,9 +527,16 @@ namespace GameJam.UI
         private IEnumerator WaitForNavigation(float autoAdvanceSeconds)
         {
             _navigationDirection = NavigationDirection.Next;
+            _navigationRequestPending = false;
             float elapsed = 0f;
             while (elapsed < autoAdvanceSeconds)
             {
+                if (ConsumeNavigationRequest(out NavigationDirection requestedDirection))
+                {
+                    _navigationDirection = requestedDirection;
+                    yield break;
+                }
+
                 if (AdvancePressed())
                 {
                     _navigationDirection = NavigationDirection.Next;
@@ -521,6 +584,35 @@ namespace GameJam.UI
             return !_isFading && Time.unscaledTime >= _inputBlockedUntil;
         }
 
+        private void RequestNextSlide()
+        {
+            RequestNavigation(NavigationDirection.Next);
+        }
+
+        private void RequestPreviousSlide()
+        {
+            RequestNavigation(NavigationDirection.Previous);
+        }
+
+        private void RequestNavigation(NavigationDirection direction)
+        {
+            if (!CanReadNavigationInput())
+                return;
+
+            _requestedNavigationDirection = direction;
+            _navigationRequestPending = true;
+        }
+
+        private bool ConsumeNavigationRequest(out NavigationDirection direction)
+        {
+            direction = _requestedNavigationDirection;
+            if (!_navigationRequestPending)
+                return false;
+
+            _navigationRequestPending = false;
+            return true;
+        }
+
         private IEnumerator Fade(CanvasGroup group, float targetAlpha, float duration, bool blockRaycasts)
         {
             if (group == null)
@@ -554,7 +646,7 @@ namespace GameJam.UI
                 return;
 
             _cinematicAudioActive = true;
-            MinigameAudioController.Active.BeginMinigameAudio();
+            CinematicAudioController.Active.BeginCinematicAudio();
         }
 
         private void StopCinematicAudio()
@@ -563,7 +655,7 @@ namespace GameJam.UI
                 return;
 
             _cinematicAudioActive = false;
-            MinigameAudioController.Active.EndMinigameAudio();
+            CinematicAudioController.Active.EndCinematicAudio();
         }
 
         private void InvokeBlackBeforeReveal(System.Action onBlackBeforeReveal)

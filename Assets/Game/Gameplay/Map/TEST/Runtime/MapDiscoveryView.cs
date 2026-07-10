@@ -56,6 +56,12 @@ namespace GameJam.Gameplay.Map
         private Material _originalUiMaterial;
         private Texture _originalUiTexture;
 
+        public void SetMapTextureOverride(Texture mapTextureOverride)
+        {
+            _mapTextureOverride = mapTextureOverride;
+            BindTextures();
+        }
+
         public void Configure(
             MapDiscoverySystem discovery,
             RawImage targetRawImage,

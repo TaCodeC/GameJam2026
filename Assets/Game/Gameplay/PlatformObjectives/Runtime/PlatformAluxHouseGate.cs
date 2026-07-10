@@ -99,7 +99,11 @@ namespace GameJam.Gameplay.PlatformObjectives
 
         private System.Collections.IEnumerator PlayEndingRoutine()
         {
-            yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.PlatformEnding, false, _nextSceneName);
+            ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.PlatformEndingComic);
+            if (comicCinematic != null)
+                yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic, _nextSceneName);
+            else
+                yield return CinematicSequencePlayer.Instance.PlayRoutine(CinematicSequences.PlatformEnding, false, _nextSceneName);
         }
 
         public bool RegisterCollectible(PlatformObjectiveCollectible collectible)

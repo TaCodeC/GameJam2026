@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
@@ -18,6 +19,7 @@ namespace GameJam.UI
         private const int InstructionsSortingOrder = 2500;
 
         private static bool s_registered;
+        private static readonly HashSet<int> s_deferredSceneHandles = new();
 
         private GameObject _root;
         private GameObject _firstPage;
@@ -32,6 +34,8 @@ namespace GameJam.UI
         private bool _finished;
         private bool _instructionAudioActive;
         private bool _shownFirstInstructions;
+
+        public bool IsFinished => _finished;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void RegisterSceneHook()
@@ -51,26 +55,81 @@ namespace GameJam.UI
             TryStartForScene(scene);
         }
 
-        private static void TryStartForScene(Scene scene)
+        public static void DeferAutomaticStart(Scene scene)
         {
             if (!scene.IsValid())
                 return;
 
-            SceneInstructionsFlow[] existingFlows = FindObjectsByType<SceneInstructionsFlow>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < existingFlows.Length; i++)
+            s_deferredSceneHandles.Add(scene.handle);
+
+            GameObject instructionsRoot = FindSceneObject(scene, InstructionsRootName);
+            if (instructionsRoot != null)
+                instructionsRoot.SetActive(false);
+
+            SceneInstructionsFlow existingFlow = FindExistingFlow(scene);
+            if (existingFlow != null)
+                existingFlow.CancelForDeferredStart();
+        }
+
+        public static IEnumerator PlayDeferredRoutine(Scene scene)
+        {
+            SceneInstructionsFlow flow = BeginDeferred(scene);
+            if (flow == null)
+                yield break;
+
+            while (flow != null && !flow.IsFinished)
+                yield return null;
+        }
+
+        public static SceneInstructionsFlow BeginDeferred(Scene scene)
+        {
+            if (!scene.IsValid())
+                return null;
+
+            s_deferredSceneHandles.Remove(scene.handle);
+            return TryStartForScene(scene);
+        }
+
+        private static SceneInstructionsFlow TryStartForScene(Scene scene)
+        {
+            if (!scene.IsValid())
+                return null;
+
+            SceneInstructionsFlow existingFlow = FindExistingFlow(scene);
+            if (existingFlow != null)
+                return existingFlow;
+
+            if (s_deferredSceneHandles.Contains(scene.handle))
             {
-                if (existingFlows[i] != null && existingFlows[i].gameObject.scene == scene)
-                    return;
+                GameObject deferredRoot = FindSceneObject(scene, InstructionsRootName);
+                if (deferredRoot != null)
+                    deferredRoot.SetActive(false);
+
+                return null;
             }
 
             GameObject instructionsRoot = FindSceneObject(scene, InstructionsRootName);
             if (instructionsRoot == null)
-                return;
+                return null;
 
             GameObject flowObject = new GameObject("Scene Instructions Flow");
             SceneManager.MoveGameObjectToScene(flowObject, scene);
             SceneInstructionsFlow flow = flowObject.AddComponent<SceneInstructionsFlow>();
             flow.Configure(instructionsRoot);
+            return flow;
+        }
+
+        private static SceneInstructionsFlow FindExistingFlow(Scene scene)
+        {
+            SceneInstructionsFlow[] existingFlows = FindObjectsByType<SceneInstructionsFlow>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < existingFlows.Length; i++)
+            {
+                SceneInstructionsFlow flow = existingFlows[i];
+                if (flow != null && flow.gameObject.scene == scene)
+                    return flow;
+            }
+
+            return null;
         }
 
         private static GameObject FindSceneObject(Scene scene, string objectName)
@@ -92,22 +151,23 @@ namespace GameJam.UI
         private void Configure(GameObject instructionsRoot)
         {
             _root = instructionsRoot;
-            StartCoroutine(Run());
+            if (BeginInstructions())
+                StartCoroutine(Run());
         }
 
-        private IEnumerator Run()
+        private bool BeginInstructions()
         {
             if (_root == null)
             {
                 Finish();
-                yield break;
+                return false;
             }
 
             ResolvePages();
             if (_firstPage == null)
             {
                 Finish();
-                yield break;
+                return false;
             }
 
             EnsureEventSystem();
@@ -115,7 +175,11 @@ namespace GameJam.UI
             StartInstructionAudio();
             ShowFirstPage();
             BindButtons();
+            return true;
+        }
 
+        private IEnumerator Run()
+        {
             while (!_finished)
             {
                 if (!CurrentPageHasButton() && FallbackAdvancePressed())
@@ -299,6 +363,22 @@ namespace GameJam.UI
             if (_shownFirstInstructions)
                 TimedCanvasFader.ShowSceneHint();
 
+            Destroy(gameObject);
+        }
+
+        private void CancelForDeferredStart()
+        {
+            if (_finished)
+                return;
+
+            _finished = true;
+            UnbindButtons();
+            StopInstructionAudio();
+
+            if (_root != null)
+                _root.SetActive(false);
+
+            ResumeGame();
             Destroy(gameObject);
         }
 

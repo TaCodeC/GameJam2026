@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using GameJam.Audio;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -275,6 +276,7 @@ namespace GameJam.Gameplay.Minigames
 
             _handlingCompletion = true;
             MinigameObjectState completedObjectState = _currentObjectState;
+            GameAudioSfx.PlayAluxeCoin();
 
             if (_registerBoneCompletion)
             {

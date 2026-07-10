@@ -1,5 +1,9 @@
 using System.Collections.Generic;
+using DynControls;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 using UnityEngine.UI;
 
 namespace GameJam.Gameplay.Map
@@ -15,14 +19,32 @@ namespace GameJam.Gameplay.Map
         [SerializeField] private Transform _player;
         [Tooltip("Visual texture used only by this UI map. Leave empty to reveal the traversable mask.")]
         [SerializeField] private Texture _mapTextureOverride;
+
+        [Header("Open Controls")]
+        [SerializeField] private GameObject _mobileControlsCanvas;
+        [SerializeField] private MobileActionButton _mobileOpenButton;
+        [SerializeField] private Button _pcOpenButton;
+        [SerializeField] private string _mobileControlsCanvasObjectName = "MobileControlsCanvas";
+        [SerializeField] private string _mobileOpenButtonObjectName = "Btn Main";
+        [SerializeField] private string _pcOpenButtonObjectName = "Btn Main_MapPC";
+#if ENABLE_INPUT_SYSTEM
+        [SerializeField] private Key _pcInputSystemToggleKey = Key.M;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        [SerializeField] private KeyCode _pcToggleKey = KeyCode.M;
+#endif
+        [SerializeField] private bool _createFallbackOpenButton = true;
+
+        [Header("Button Sprites")]
         [SerializeField] private Sprite _openButtonSprite;
+        [SerializeField] private Sprite _closeButtonSprite;
 
         [Header("Layout")]
         [SerializeField] private Vector2 _mapPanelSize = new Vector2(1500f, 842f);
         [SerializeField] private bool _preserveMapAspectRatio = true;
         [SerializeField, Min(0f)] private float _screenMargin = 20f;
         [SerializeField] private Vector2 _openButtonSize = new Vector2(92f, 92f);
-        [SerializeField] private Vector2 _closeButtonSize = new Vector2(64f, 64f);
+        [SerializeField] private Vector2 _closeButtonSize = new Vector2(96f, 96f);
         [SerializeField] private int _sortingOrder = 1000;
         [SerializeField] private bool _pauseGameWhenOpen = true;
 
@@ -31,7 +53,7 @@ namespace GameJam.Gameplay.Map
         [SerializeField] private Color _playerMarkerColor = Color.red;
         [SerializeField, Min(1f)] private float _minigameMarkerDiameter = 12f;
         [SerializeField] private Color _minigameMarkerColor = new Color(1f, 0.48f, 0.05f, 1f);
-        [SerializeField] private Color _panelBackgroundColor = new Color(0f, 0f, 0f, 0.78f);
+        [SerializeField] private Color _panelBackgroundColor = Color.black;
         [SerializeField] private Color _labelColor = Color.white;
         [SerializeField] private Color _buttonFallbackColor = new Color(0.1f, 0.09f, 0.05f, 0.9f);
         [SerializeField] private bool _includeInactiveMinigames;
@@ -45,6 +67,8 @@ namespace GameJam.Gameplay.Map
         private RectTransform _markerRoot;
         private RectTransform _playerMarker;
         private Button _openButton;
+        private MobileActionButton _openMobileButton;
+        private Button _fallbackOpenButton;
         private Text _discoveryLabel;
         private Texture2D _markerTexture;
         private Sprite _markerSprite;
@@ -53,6 +77,17 @@ namespace GameJam.Gameplay.Map
         private bool _mapOpen;
 
         public GameObject HudRoot => _hudRoot;
+
+        public void SetMapTextureOverride(Texture mapTextureOverride)
+        {
+            _mapTextureOverride = mapTextureOverride;
+            ApplyMapAspectRatio();
+            ConfigureDiscoveryView();
+            RefreshMapSource();
+            RefreshMinigameMarkers(true);
+            UpdateMarkers();
+            UpdateLabels();
+        }
 
         public void Configure(MapDiscoverySystem discovery, Transform player = null)
         {
@@ -150,6 +185,9 @@ namespace GameJam.Gameplay.Map
 
         private void Update()
         {
+            ConfigureOpenControls();
+            HandlePcToggleInput();
+
             if (!_mapOpen)
             {
                 return;
@@ -171,10 +209,20 @@ namespace GameJam.Gameplay.Map
             {
                 CloseMap();
             }
+
+            UnhookOpenButton(_openButton);
+            UnhookMobileOpenButton(_openMobileButton);
+            _openButton = null;
+            _openMobileButton = null;
         }
 
         private void OnDestroy()
         {
+            UnhookOpenButton(_openButton);
+            UnhookMobileOpenButton(_openMobileButton);
+            _openButton = null;
+            _openMobileButton = null;
+
             ClearMinigameMarkers();
 
             if (_hudRoot != null)
@@ -212,6 +260,7 @@ namespace GameJam.Gameplay.Map
             }
 
             ApplyMapAspectRatio();
+            ResolveOpenControlSources();
         }
 
         private void BuildHud()
@@ -234,7 +283,7 @@ namespace GameJam.Gameplay.Map
             scaler.matchWidthOrHeight = 0.5f;
 
             CreateOverlay(_hudRoot.transform);
-            CreateOpenButton(_hudRoot.transform);
+            ConfigureOpenControls();
         }
 
         private void CreateOverlay(Transform parent)
@@ -250,7 +299,7 @@ namespace GameJam.Gameplay.Map
             overlayRect.sizeDelta = Vector2.zero;
 
             Image overlayImage = _mapOverlay.GetComponent<Image>();
-            overlayImage.color = _panelBackgroundColor;
+            overlayImage.color = GetOpaqueOverlayColor();
             overlayImage.raycastTarget = true;
 
             RectTransform mapFrame = CreateMapFrame(_mapOverlay.transform);
@@ -296,7 +345,7 @@ namespace GameJam.Gameplay.Map
             return mapImage;
         }
 
-        private void CreateOpenButton(Transform parent)
+        private Button CreateFallbackOpenButton(Transform parent)
         {
             GameObject buttonObject = new GameObject("Open Map Button", typeof(RectTransform), typeof(Image), typeof(Button));
             buttonObject.transform.SetParent(parent, false);
@@ -313,21 +362,202 @@ namespace GameJam.Gameplay.Map
             buttonImage.preserveAspect = true;
             buttonImage.color = _openButtonSprite != null ? Color.white : _buttonFallbackColor;
 
-            _openButton = buttonObject.GetComponent<Button>();
-            _openButton.onClick.AddListener(ToggleMap);
+            Button button = buttonObject.GetComponent<Button>();
+            button.onClick.AddListener(ToggleMap);
+            return button;
+        }
+
+        private void ConfigureOpenControls()
+        {
+            ResolveOpenControlSources();
+
+            bool useMobileControls = IsMobileControlsActive();
+            MobileActionButton targetMobileButton = useMobileControls ? _mobileOpenButton : null;
+            Button targetButton = useMobileControls ? null : _pcOpenButton;
+
+            SetComponentGameObjectActive(_pcOpenButton, !useMobileControls);
+
+            if (useMobileControls && _mobileOpenButton != null && !_mobileOpenButton.gameObject.activeSelf)
+            {
+                _mobileOpenButton.gameObject.SetActive(true);
+            }
+
+            if (targetMobileButton == null && targetButton == null && _createFallbackOpenButton && _hudRoot != null)
+            {
+                if (_fallbackOpenButton == null)
+                {
+                    _fallbackOpenButton = CreateFallbackOpenButton(_hudRoot.transform);
+                }
+
+                targetButton = _fallbackOpenButton;
+            }
+
+            SetComponentGameObjectActive(_fallbackOpenButton, targetButton == _fallbackOpenButton);
+
+            if (_openButton == targetButton && _openMobileButton == targetMobileButton)
+            {
+                HookOpenButton(_openButton);
+                HookMobileOpenButton(_openMobileButton);
+                return;
+            }
+
+            UnhookOpenButton(_openButton);
+            UnhookMobileOpenButton(_openMobileButton);
+            _openButton = targetButton;
+            _openMobileButton = targetMobileButton;
+            HookOpenButton(_openButton);
+            HookMobileOpenButton(_openMobileButton);
+        }
+
+        private void ResolveOpenControlSources()
+        {
+            if (_mobileControlsCanvas == null)
+            {
+                _mobileControlsCanvas = FindSceneGameObject(_mobileControlsCanvasObjectName);
+            }
+
+            if (_mobileOpenButton == null)
+            {
+                _mobileOpenButton = FindSceneMobileButton(_mobileOpenButtonObjectName);
+            }
+
+            if (_pcOpenButton == null)
+            {
+                _pcOpenButton = FindSceneButton(_pcOpenButtonObjectName);
+            }
+        }
+
+        private bool IsMobileControlsActive()
+        {
+            return _mobileControlsCanvas != null && _mobileControlsCanvas.activeInHierarchy;
+        }
+
+        private void HandlePcToggleInput()
+        {
+            if (IsMobileControlsActive())
+            {
+                return;
+            }
+
+#if ENABLE_INPUT_SYSTEM
+            if (WasInputSystemPcTogglePressed())
+            {
+                ToggleMap();
+                return;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (_pcToggleKey != KeyCode.None && Input.GetKeyDown(_pcToggleKey))
+            {
+                ToggleMap();
+            }
+#endif
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        private bool WasInputSystemPcTogglePressed()
+        {
+            if (_pcInputSystemToggleKey == Key.None || Keyboard.current == null)
+            {
+                return false;
+            }
+
+            var keyControl = Keyboard.current[_pcInputSystemToggleKey];
+            return keyControl != null && keyControl.wasPressedThisFrame;
+        }
+#endif
+
+        private void HookOpenButton(Button button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.RemoveListener(ToggleMap);
+            button.onClick.AddListener(ToggleMap);
+        }
+
+        private void UnhookOpenButton(Button button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.RemoveListener(ToggleMap);
+        }
+
+        private void HookMobileOpenButton(MobileActionButton button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.Pressed -= ToggleMapFromMobileButton;
+            button.Pressed += ToggleMapFromMobileButton;
+        }
+
+        private void UnhookMobileOpenButton(MobileActionButton button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.Pressed -= ToggleMapFromMobileButton;
+        }
+
+        private void ToggleMapFromMobileButton(MobileActionButton button)
+        {
+            ToggleMap();
+        }
+
+        private static void SetComponentGameObjectActive(Component component, bool active)
+        {
+            if (component != null && component.gameObject.activeSelf != active)
+            {
+                component.gameObject.SetActive(active);
+            }
         }
 
         private void CreateCloseButton(Transform parent)
         {
-            Button closeButton = CreateTextButton(
-                "Close Map Button",
-                parent,
-                "X",
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(-_screenMargin, -_screenMargin),
-                _closeButtonSize);
+            Vector2 anchor = new Vector2(1f, 1f);
+            Vector2 position = new Vector2(-_screenMargin, -_screenMargin);
+            Button closeButton = _closeButtonSprite != null
+                ? CreateSpriteButton("Close Map Button", parent, _closeButtonSprite, anchor, anchor, position, _closeButtonSize)
+                : CreateTextButton("Close Map Button", parent, "X", anchor, anchor, position, _closeButtonSize);
             closeButton.onClick.AddListener(CloseMap);
+        }
+
+        private Button CreateSpriteButton(
+            string buttonName,
+            Transform parent,
+            Sprite sprite,
+            Vector2 anchor,
+            Vector2 pivot,
+            Vector2 anchoredPosition,
+            Vector2 size)
+        {
+            GameObject buttonObject = new GameObject(buttonName, typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+
+            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+            buttonRect.anchorMin = anchor;
+            buttonRect.anchorMax = anchor;
+            buttonRect.pivot = pivot;
+            buttonRect.anchoredPosition = anchoredPosition;
+            buttonRect.sizeDelta = size;
+
+            Image image = buttonObject.GetComponent<Image>();
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            image.color = sprite != null ? Color.white : _buttonFallbackColor;
+
+            return buttonObject.GetComponent<Button>();
         }
 
         private Button CreateTextButton(
@@ -681,6 +911,11 @@ namespace GameJam.Gameplay.Map
             _mapPanelSize.y = _mapPanelSize.x * map.height / map.width;
         }
 
+        private Color GetOpaqueOverlayColor()
+        {
+            return new Color(_panelBackgroundColor.r, _panelBackgroundColor.g, _panelBackgroundColor.b, 1f);
+        }
+
         private void OnValidate()
         {
             _mapPanelSize.x = Mathf.Max(64f, _mapPanelSize.x);
@@ -697,6 +932,44 @@ namespace GameJam.Gameplay.Map
         private static bool IsMinigameInteractable(MonoBehaviour behaviour)
         {
             return behaviour != null && behaviour.GetType().FullName == MinigameInteractableTypeName;
+        }
+
+        private static Button FindSceneButton(string objectName)
+        {
+            GameObject buttonObject = FindSceneGameObject(objectName);
+            return buttonObject != null ? buttonObject.GetComponent<Button>() : null;
+        }
+
+        private static MobileActionButton FindSceneMobileButton(string objectName)
+        {
+            GameObject buttonObject = FindSceneGameObject(objectName);
+            return buttonObject != null ? buttonObject.GetComponent<MobileActionButton>() : null;
+        }
+
+        private static GameObject FindSceneGameObject(string objectName)
+        {
+            if (string.IsNullOrWhiteSpace(objectName))
+            {
+                return null;
+            }
+
+            Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                Transform candidate = transforms[i];
+                if (candidate == null || candidate.name != objectName)
+                {
+                    continue;
+                }
+
+                GameObject candidateObject = candidate.gameObject;
+                if (candidateObject != null && candidateObject.scene.IsValid())
+                {
+                    return candidateObject;
+                }
+            }
+
+            return null;
         }
 
         private static void DestroyRuntimeObject(Object target)
