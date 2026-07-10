@@ -3358,6 +3358,9 @@ MonoBehaviour:
   _playerMarkerColor: {r: 1, g: 0, b: 0, a: 1}
   _minigameMarkerDiameter: 12
   _minigameMarkerColor: {r: 1, g: 0.48, b: 0.05, a: 1}
+  _minigameMarkerMaterial: {fileID: 2100000, guid: 427683af94cd4699a8dc490d532b19ef, type: 2}
+  _minigameMarkerStarColor: {r: 0.12, g: 1, b: 0.32, a: 1}
+  _minigameMarkerStarCoreColor: {r: 0.72, g: 1, b: 0.45, a: 1}
   _panelBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
   _labelColor: {r: 1, g: 1, b: 1, a: 1}
   _buttonFallbackColor: {r: 0.1, g: 0.09, b: 0.05, a: 0.9}

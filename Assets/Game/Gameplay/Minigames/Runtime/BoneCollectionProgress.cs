@@ -16,6 +16,7 @@ namespace GameJam.Gameplay.Minigames
         [SerializeField] private string _bonesCounterObjectName = "BonesCounter";
         [SerializeField] private string _rootsObjectName = "Raices";
         [SerializeField] private Color _rootsMarkerColor = new Color(1f, 0.82f, 0.16f, 1f);
+        [SerializeField, Min(1f)] private float _rootsMarkerDiameter = 28f;
         [SerializeField] private bool _playAllBonesCinematic = true;
         [SerializeField] private string _allBonesMapMessage = "Mira el mapa!";
         [SerializeField] private bool _showAllBonesMapMessage = true;
@@ -123,6 +124,7 @@ namespace GameJam.Gameplay.Minigames
                 marker = roots.AddComponent<MapAttentionMarker>();
 
             marker.SetColor(_rootsMarkerColor);
+            marker.SetDiameter(_rootsMarkerDiameter);
             marker.SetVisible(true);
 
             CaveRootsPortalTrigger portal = roots.GetComponent<CaveRootsPortalTrigger>();

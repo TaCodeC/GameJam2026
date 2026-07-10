@@ -53,6 +53,9 @@ namespace GameJam.Gameplay.Map
         [SerializeField] private Color _playerMarkerColor = Color.red;
         [SerializeField, Min(1f)] private float _minigameMarkerDiameter = 12f;
         [SerializeField] private Color _minigameMarkerColor = new Color(1f, 0.48f, 0.05f, 1f);
+        [SerializeField] private Material _minigameMarkerMaterial;
+        [SerializeField] private Color _minigameMarkerStarColor = new Color(0.12f, 1f, 0.32f, 1f);
+        [SerializeField] private Color _minigameMarkerStarCoreColor = new Color(0.72f, 1f, 0.45f, 1f);
         [SerializeField] private Color _panelBackgroundColor = Color.black;
         [SerializeField] private Color _labelColor = Color.white;
         [SerializeField] private Color _buttonFallbackColor = new Color(0.1f, 0.09f, 0.05f, 0.9f);
@@ -70,6 +73,7 @@ namespace GameJam.Gameplay.Map
         private MobileActionButton _openMobileButton;
         private Button _fallbackOpenButton;
         private Text _discoveryLabel;
+        private Material _minigameMarkerMaterialInstance;
         private Texture2D _markerTexture;
         private Sprite _markerSprite;
         private float _nextMinigameMarkerRefreshTime;
@@ -238,6 +242,11 @@ namespace GameJam.Gameplay.Map
             if (_markerTexture != null)
             {
                 DestroyRuntimeObject(_markerTexture);
+            }
+
+            if (_minigameMarkerMaterialInstance != null)
+            {
+                DestroyRuntimeObject(_minigameMarkerMaterialInstance);
             }
         }
 
@@ -765,13 +774,31 @@ namespace GameJam.Gameplay.Map
                     continue;
                 }
 
-                RectTransform marker = CreateMarker(
-                    _markerRoot,
-                    $"Minigame Position ({sourceObject.name})",
-                    _minigameMarkerDiameter,
-                    _minigameMarkerColor);
+                RectTransform marker = CreateMinigameMarker(sourceObject);
                 _minigameMarkers.Add(new MinigameMarker(behaviour, marker));
             }
+        }
+
+        private RectTransform CreateMinigameMarker(GameObject sourceObject)
+        {
+            RectTransform marker = CreateMarker(
+                _markerRoot,
+                $"Minigame Position ({sourceObject.name})",
+                _minigameMarkerDiameter,
+                _minigameMarkerColor);
+
+            Image markerImage = marker.GetComponent<Image>();
+            if (markerImage != null)
+            {
+                Material starMaterial = GetMinigameMarkerMaterial();
+                if (starMaterial != null)
+                {
+                    markerImage.material = starMaterial;
+                    markerImage.color = Color.white;
+                }
+            }
+
+            return marker;
         }
 
         private void CreateAttentionMarker(MapAttentionMarker attentionMarker)
@@ -893,6 +920,34 @@ namespace GameJam.Gameplay.Map
             return _discovery != null && _discovery.Definition != null
                 ? _discovery.Definition.TraversableMask
                 : null;
+        }
+
+        private Material GetMinigameMarkerMaterial()
+        {
+            if (_minigameMarkerMaterialInstance != null)
+            {
+                return _minigameMarkerMaterialInstance;
+            }
+
+            if (_minigameMarkerMaterial != null)
+            {
+                _minigameMarkerMaterialInstance = new Material(_minigameMarkerMaterial);
+            }
+            else
+            {
+                Shader starShader = Shader.Find("GameJam/Minigames/InteractableStarPrompt");
+                if (starShader == null)
+                {
+                    return null;
+                }
+
+                _minigameMarkerMaterialInstance = new Material(starShader);
+            }
+
+            _minigameMarkerMaterialInstance.name = "MapHud_MinijuegoStar_Runtime";
+            _minigameMarkerMaterialInstance.SetColor("_Color", _minigameMarkerStarColor);
+            _minigameMarkerMaterialInstance.SetColor("_GlowColor", _minigameMarkerStarCoreColor);
+            return _minigameMarkerMaterialInstance;
         }
 
         private void ApplyMapAspectRatio()
