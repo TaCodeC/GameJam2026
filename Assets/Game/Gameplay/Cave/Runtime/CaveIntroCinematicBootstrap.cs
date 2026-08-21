@@ -1,6 +1,7 @@
 using System.Collections;
 using GameJam.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GameJam.Gameplay.Cave
 {
@@ -49,10 +50,27 @@ namespace GameJam.Gameplay.Cave
             }
 
             _resolvedComicCinematic ??= ResolveComicCinematic();
+            bool comicLoadedFromResources = _comicCinematic == null && _resolvedComicCinematic != null;
+            ComicCinematicPlayer comicPlayer = null;
+
             if (_resolvedComicCinematic != null)
-                yield return ComicCinematicPlayer.Instance.PlayRoutine(_resolvedComicCinematic, string.Empty, ShowInstructionsUnderFade);
+            {
+                comicPlayer = ComicCinematicPlayer.Instance;
+                yield return comicPlayer.PlayRoutine(_resolvedComicCinematic, string.Empty, ShowInstructionsUnderFade);
+            }
             else
+            {
                 yield return CinematicSequencePlayer.Instance.PlayRoutine(resources, false, string.Empty, ShowInstructionsUnderFade);
+            }
+
+            if (comicLoadedFromResources)
+            {
+                // The comic player survives scene changes. Clear its last Sprite reference before
+                // dropping the Resources-loaded cinematic so iOS/WebGL can reclaim the page texture.
+                ReleaseDisplayedComicPage(comicPlayer);
+                _resolvedComicCinematic = null;
+                yield return Resources.UnloadUnusedAssets();
+            }
 
             ShowInstructionsUnderFade();
 
@@ -68,6 +86,24 @@ namespace GameJam.Gameplay.Cave
             return !string.IsNullOrWhiteSpace(_comicResourceName)
                 ? Resources.Load<ComicCinematicAsset>(_comicResourceName)
                 : null;
+        }
+
+        private static void ReleaseDisplayedComicPage(ComicCinematicPlayer comicPlayer)
+        {
+            if (comicPlayer == null)
+                return;
+
+            Image[] images = comicPlayer.GetComponentsInChildren<Image>(true);
+            for (int i = 0; i < images.Length; i++)
+            {
+                Image image = images[i];
+                if (image == null || image.gameObject.name != "Comic Page")
+                    continue;
+
+                image.sprite = null;
+                image.enabled = false;
+                return;
+            }
         }
     }
 }
