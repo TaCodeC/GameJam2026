@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
@@ -8,170 +7,75 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEngine;
 
-public static class GitHubPagesWebGLBuild
+public sealed class WebGLBuildSettingsPreprocessor : IPreprocessBuildWithReport
 {
-    private const string OutputDirectory = "build";
+    public int callbackOrder => 0;
+
+    public void OnPreprocessBuild(BuildReport report)
+    {
+        if (report.summary.platform != BuildTarget.WebGL)
+            return;
+
+        // Use normal WebGL compression again. The previous GitHub Pages workaround
+        // forced uncompressed .data/.wasm/.js files and deleted .gz/.br output.
+        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
+        PlayerSettings.WebGL.decompressionFallback = false;
+    }
+}
+
+public static class WebGLBuildPostprocessor
+{
     private const string LoadingBackgroundSourcePath = "BuildAssets/WebGL/loading-background.jpg";
     private const string LoadingBackgroundFileName = "loading-background.jpg";
     private const string LoadingScreenStyleId = "gamejam-loading-screen";
-
-    [MenuItem("Build/GitHub Pages WebGL")]
-    public static void BuildForGitHubPages()
-    {
-        ConfigureWebGLForGitHubPages();
-
-        if (Directory.Exists(OutputDirectory))
-        {
-            Directory.Delete(OutputDirectory, true);
-        }
-
-        Directory.CreateDirectory(OutputDirectory);
-
-        var scenes = EditorBuildSettings.scenes
-            .Where(scene => scene.enabled)
-            .Select(scene => scene.path)
-            .ToArray();
-
-        if (scenes.Length == 0)
-        {
-            throw new BuildFailedException("No enabled scenes found in Build Settings.");
-        }
-
-        var report = BuildPipeline.BuildPlayer(
-            scenes,
-            OutputDirectory,
-            BuildTarget.WebGL,
-            BuildOptions.None
-        );
-
-        if (report.summary.result != BuildResult.Succeeded)
-        {
-            throw new BuildFailedException($"WebGL build failed: {report.summary.result}");
-        }
-
-        PostProcessBuild(OutputDirectory);
-    }
-
-    [MenuItem("Build/Post-process GitHub Pages WebGL")]
-    public static void PostProcessExistingBuild()
-    {
-        ConfigureWebGLForGitHubPages();
-        PostProcessBuild(OutputDirectory);
-        Debug.Log("GitHub Pages WebGL post-process complete.");
-    }
+    private const string IosDprMarker = "// GameJam iOS memory safeguard";
 
     [PostProcessBuild(1000)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
     {
         if (target != BuildTarget.WebGL)
-        {
             return;
-        }
 
         PostProcessBuild(pathToBuiltProject);
-        SyncToGitHubPagesBuild(pathToBuiltProject);
-    }
-
-    private static void ConfigureWebGLForGitHubPages()
-    {
-        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
-        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
-        PlayerSettings.WebGL.decompressionFallback = false;
     }
 
     private static void PostProcessBuild(string outputPath)
     {
-        var absoluteOutputPath = Path.GetFullPath(outputPath);
-        var indexPath = Path.Combine(absoluteOutputPath, "index.html");
-        var buildPath = Path.Combine(absoluteOutputPath, "Build");
+        string absoluteOutputPath = Path.GetFullPath(outputPath);
+        string indexPath = Path.Combine(absoluteOutputPath, "index.html");
 
         if (!File.Exists(indexPath))
-        {
             throw new FileNotFoundException("Unity WebGL index.html was not found.", indexPath);
-        }
 
-        if (!Directory.Exists(buildPath))
-        {
-            throw new DirectoryNotFoundException($"Unity WebGL Build directory was not found: {buildPath}");
-        }
-
-        ValidateUncompressedFiles(buildPath);
         CopyLoadingBackground(absoluteOutputPath);
         PatchIndex(indexPath);
         PatchLoadingScreen(indexPath);
-        DeletePrecompressedFiles(buildPath);
-    }
-
-    private static void SyncToGitHubPagesBuild(string sourcePath)
-    {
-        var absoluteSourcePath = Path.GetFullPath(sourcePath);
-        var absoluteOutputPath = Path.GetFullPath(OutputDirectory);
-
-        if (string.Equals(absoluteSourcePath, absoluteOutputPath, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        if (Directory.Exists(absoluteOutputPath))
-        {
-            Directory.Delete(absoluteOutputPath, true);
-        }
-
-        CopyDirectory(absoluteSourcePath, absoluteOutputPath);
-        PostProcessBuild(absoluteOutputPath);
-
-        Debug.Log($"Copied WebGL build to GitHub Pages output: {absoluteOutputPath}");
-    }
-
-    private static void CopyDirectory(string sourcePath, string destinationPath)
-    {
-        Directory.CreateDirectory(destinationPath);
-
-        foreach (var directory in Directory.EnumerateDirectories(sourcePath, "*", SearchOption.AllDirectories))
-        {
-            Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
-        }
-
-        foreach (var file in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
-        {
-            File.Copy(file, file.Replace(sourcePath, destinationPath), true);
-        }
+        PatchIosDevicePixelRatio(indexPath);
     }
 
     private static void PatchIndex(string indexPath)
     {
-        var html = File.ReadAllText(indexPath);
-        var buildVersion = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+        string html = File.ReadAllText(indexPath);
+        string buildVersion = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
 
-        html = html
-            .Replace("/build.data.br", "/build.data")
-            .Replace("/build.framework.js.br", "/build.framework.js")
-            .Replace("/build.wasm.br", "/build.wasm")
-            .Replace("/build.data.gz", "/build.data")
-            .Replace("/build.framework.js.gz", "/build.framework.js")
-            .Replace("/build.wasm.gz", "/build.wasm");
+        // Keep cache busting, but preserve whatever compression suffix Unity generated
+        // (.gz, .br, or none) instead of rewriting compressed files to uncompressed ones.
+        html = Regex.Replace(
+            html,
+            @"\s*var buildVersion = ""[^""]+"";\s*",
+            "\n      "
+        );
 
         html = Regex.Replace(
             html,
-            @"\s*var buildVersion = ""[^""]+"";\s*\n\s*var loaderUrl = buildUrl \+ ""/build\.loader\.js(?:\?v="" \+ buildVersion)?"";",
-            string.Empty
-        );
-
-        html = html.Replace(
-            "var loaderUrl = buildUrl + \"/build.loader.js\";",
+            @"var loaderUrl = buildUrl \+ ""/build\.loader\.js(?:\?v="" \+ buildVersion)?"";",
             $"var buildVersion = \"{buildVersion}\";\n      var loaderUrl = buildUrl + \"/build.loader.js?v=\" + buildVersion;"
         );
 
         html = Regex.Replace(
             html,
-            @"buildUrl \+ ""/(build\.data|build\.framework\.js|build\.wasm)(?:""|\?v="" \+ buildVersion)",
+            @"buildUrl \+ ""/(build\.(?:data|framework\.js|wasm)(?:\.gz|\.br)?)(?:\?v="" \+ buildVersion)?""",
             "buildUrl + \"/$1?v=\" + buildVersion"
-        );
-
-        html = Regex.Replace(
-            html,
-            @"productVersion: ""[^""]+""",
-            $"productVersion: \"{buildVersion}\""
         );
 
         File.WriteAllText(indexPath, html);
@@ -179,9 +83,9 @@ public static class GitHubPagesWebGLBuild
 
     private static void PatchLoadingScreen(string indexPath)
     {
-        var html = File.ReadAllText(indexPath);
-        var stylesheetLink = "    <link rel=\"stylesheet\" href=\"TemplateData/style.css\">\n";
-        var loadingScreenStyle = $@"      <style id=""{LoadingScreenStyleId}"">
+        string html = File.ReadAllText(indexPath);
+        const string stylesheetLink = "    <link rel=\"stylesheet\" href=\"TemplateData/style.css\">\n";
+        string loadingScreenStyle = $@"      <style id=""{LoadingScreenStyleId}"">
         html, body {{ width: 100%; height: 100%; overflow: hidden; background: #02151d; }}
         #unity-container {{ background: #02151d url('TemplateData/{LoadingBackgroundFileName}') center center / cover no-repeat; overflow: hidden; }}
         #unity-canvas {{ background: #02151d; }}
@@ -205,13 +109,9 @@ public static class GitHubPagesWebGLBuild
         );
 
         if (html.Contains(stylesheetLink))
-        {
             html = html.Replace(stylesheetLink, stylesheetLink + loadingScreenStyle);
-        }
         else
-        {
             html = html.Replace("  </head>", loadingScreenStyle + "  </head>");
-        }
 
         html = html.Replace(
             "      document.querySelector(\"#unity-loading-bar\").style.display = \"block\";",
@@ -226,48 +126,45 @@ public static class GitHubPagesWebGLBuild
         File.WriteAllText(indexPath, html);
     }
 
+    private static void PatchIosDevicePixelRatio(string indexPath)
+    {
+        string html = File.ReadAllText(indexPath);
+
+        if (html.Contains(IosDprMarker))
+            return;
+
+        const string unityHint = "        // config.devicePixelRatio = 1;";
+        string iosDprPatch =
+            $"        {IosDprMarker}\n" +
+            "        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {\n" +
+            "          config.devicePixelRatio = 1;\n" +
+            "        }";
+
+        if (html.Contains(unityHint))
+        {
+            html = html.Replace(unityHint, iosDprPatch);
+        }
+        else
+        {
+            const string mobileClassLine = "        canvas.className = \"unity-mobile\";";
+            if (html.Contains(mobileClassLine))
+                html = html.Replace(mobileClassLine, mobileClassLine + "\n\n" + iosDprPatch);
+            else
+                Debug.LogWarning("Could not inject the iOS devicePixelRatio safeguard into WebGL index.html.");
+        }
+
+        File.WriteAllText(indexPath, html);
+    }
+
     private static void CopyLoadingBackground(string outputPath)
     {
-        var sourcePath = Path.GetFullPath(LoadingBackgroundSourcePath);
+        string sourcePath = Path.GetFullPath(LoadingBackgroundSourcePath);
 
         if (!File.Exists(sourcePath))
-        {
             throw new FileNotFoundException("WebGL loading background was not found.", sourcePath);
-        }
 
-        var templateDataPath = Path.Combine(outputPath, "TemplateData");
+        string templateDataPath = Path.Combine(outputPath, "TemplateData");
         Directory.CreateDirectory(templateDataPath);
         File.Copy(sourcePath, Path.Combine(templateDataPath, LoadingBackgroundFileName), true);
-    }
-
-    private static void DeletePrecompressedFiles(string buildPath)
-    {
-        foreach (var file in Directory.EnumerateFiles(buildPath, "*.br").Concat(Directory.EnumerateFiles(buildPath, "*.gz")))
-        {
-            File.Delete(file);
-        }
-    }
-
-    private static void ValidateUncompressedFiles(string buildPath)
-    {
-        var requiredFiles = new[]
-        {
-            "build.data",
-            "build.framework.js",
-            "build.loader.js",
-            "build.wasm",
-        };
-
-        var missingFiles = requiredFiles
-            .Select(file => Path.Combine(buildPath, file))
-            .Where(file => !File.Exists(file))
-            .ToArray();
-
-        if (missingFiles.Length > 0)
-        {
-            throw new BuildFailedException(
-                "GitHub Pages build is missing uncompressed Unity files: " + string.Join(", ", missingFiles)
-            );
-        }
     }
 }
