@@ -11,7 +11,7 @@ namespace GameJam.Gameplay.Minigames.Editor
 {
     public static class BoneMeasurementMinigamePrefabGenerator
     {
-        private const string SourceRoot = "/Users/tacodec/Downloads/Game Jam 2026-3/HUESOS MINIJUEGO";
+        private const string SourceRoot = "/Users/tacodec/Downloads/Game Jam 2026/HUESOS MINIJUEGO";
         private const string ScenePath = "Assets/Scenes/Cave_ShaderTesst.unity";
         private const string PopupPrefabPath = "Assets/Game/Gameplay/Minigames/Prefabs/MinigamePopupCanvas.prefab";
         private const string OutputRoot = "Assets/Game/Gameplay/Minigames/BoneMeasurements";
@@ -81,19 +81,8 @@ namespace GameJam.Gameplay.Minigames.Editor
                     MeasurementKind.Length,
                     MeasurementToolType.LinearTape,
                     "Mide la longitud visible del femur sin moverlo.",
-                    48f,
-                    1f,
-                    "cm"),
-                new BoneRecord(
-                    "humero",
-                    "Humero",
-                    "HUESOS RECTOS/umero render (20260701025648).png",
-                    "UI LIBRETA LVL1/humero.png",
-                    MeasurementKind.Length,
-                    MeasurementToolType.LinearTape,
-                    "Mide la longitud visible del humero sin moverlo.",
-                    32f,
-                    1f,
+                    11f,
+                    3f,
                     "cm"),
                 new BoneRecord(
                     "perone",
@@ -103,42 +92,20 @@ namespace GameJam.Gameplay.Minigames.Editor
                     MeasurementKind.Length,
                     MeasurementToolType.LinearTape,
                     "Mide la longitud visible del perone sin moverlo.",
-                    35f,
-                    1f,
+                    14f,
+                    3f,
                     "cm"),
                 new BoneRecord(
                     "clavicula",
                     "Clavicula",
                     "HUESOS ARQUEADOS/clavicula (20260702023006).png",
                     "UI LIBRETA LVL1/clavicula.png",
-                    MeasurementKind.Angle,
-                    MeasurementToolType.Angle,
-                    "Mide el angulo principal de la curvatura de la clavicula.",
-                    28f,
+                    MeasurementKind.Length,
+                    MeasurementToolType.LinearTape,
+                    "Mide la longitud visible de la clavicula sin moverla.",
+                    14f,
                     3f,
-                    "grados"),
-                new BoneRecord(
-                    "primera_costilla",
-                    "Primera costilla",
-                    "HUESOS ARQUEADOS/1era costilla (20260702022950).png",
-                    "UI LIBRETA LVL1/costilla.png",
-                    MeasurementKind.Angle,
-                    MeasurementToolType.Angle,
-                    "Mide el angulo principal de la curvatura de la primera costilla.",
-                    42f,
-                    3f,
-                    "grados"),
-                new BoneRecord(
-                    "sacro",
-                    "Sacro",
-                    "HUESOS ARQUEADOS/hueso sacro (20260702120719).png",
-                    "UI LIBRETA LVL1/sacro.png",
-                    MeasurementKind.Angle,
-                    MeasurementToolType.Angle,
-                    "Mide el angulo principal de la curvatura del sacro.",
-                    18f,
-                    3f,
-                    "grados"),
+                    "cm"),
                 new BoneRecord(
                     "craneo",
                     "Craneo",
@@ -146,9 +113,9 @@ namespace GameJam.Gameplay.Minigames.Editor
                     "UI LIBRETA LVL1/craneo.png",
                     MeasurementKind.Circumference,
                     MeasurementToolType.Circumference,
-                    "Estima la circunferencia visible del craneo usando su diametro.",
-                    55f,
-                    2f,
+                    "Estima la circunferencia visible del craneo usando su radio.",
+                    37f,
+                    10f,
                     "cm"),
                 new BoneRecord(
                     "rotula",
@@ -157,9 +124,9 @@ namespace GameJam.Gameplay.Minigames.Editor
                     "UI LIBRETA LVL1/rotula.png",
                     MeasurementKind.Circumference,
                     MeasurementToolType.Circumference,
-                    "Estima la circunferencia visible de la rotula usando su diametro.",
-                    12f,
-                    1f,
+                    "Estima la circunferencia visible de la rotula usando su radio.",
+                    30f,
+                    10f,
                     "cm"),
                 new BoneRecord(
                     "vertebra_lumbar",
@@ -168,9 +135,9 @@ namespace GameJam.Gameplay.Minigames.Editor
                     "UI LIBRETA LVL1/vertebra lumbar.png",
                     MeasurementKind.Circumference,
                     MeasurementToolType.Circumference,
-                    "Estima la circunferencia visible de la vertebra lumbar usando su diametro.",
-                    18f,
-                    1f,
+                    "Estima la circunferencia visible de la vertebra lumbar usando su radio.",
+                    35f,
+                    10f,
                     "cm")
             };
         }
@@ -500,7 +467,14 @@ namespace GameJam.Gameplay.Minigames.Editor
             string source = Path.Combine(SourceRoot, sourceRelativePath);
             if (!File.Exists(source))
             {
-                throw new FileNotFoundException($"Source sprite not found: {source}", source);
+                Sprite existingSprite = AssetDatabase.LoadAssetAtPath<Sprite>(destinationAssetPath);
+                if (existingSprite != null)
+                {
+                    ConfigureSpriteImporter(destinationAssetPath);
+                    return AssetDatabase.LoadAssetAtPath<Sprite>(destinationAssetPath);
+                }
+
+                throw new FileNotFoundException($"Source sprite not found and no imported fallback exists: {source}", source);
             }
 
             string destination = ProjectPath(destinationAssetPath);

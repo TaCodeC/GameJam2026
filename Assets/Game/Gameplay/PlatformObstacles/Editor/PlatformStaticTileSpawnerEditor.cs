@@ -15,6 +15,19 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
         private const string PrefabPath = PrefabFolder + "/PlatformStaticTileSpawner.prefab";
         private const string Tiles1Path = "Assets/Game/Art/Platform/Tiles1.png";
         private const string Tiles2Path = "Assets/Game/Art/Platform/Tiles2.png";
+        private const string UpdatedTiles2Path = "Assets/Game/Art/Platform/New/Fondos/Tiles2 nuevos.png";
+        private const string UpdatedPiedraPath = "Assets/Game/Art/Platform/New/Fondos/Piedra.png";
+        private const string CharcoPath = "Assets/Game/Art/Platform/New/Fondos/Charco.png";
+        private const string UpdatedVegetacion1Path = "Assets/Game/Art/Platform/New/Fondos/Vegetación 1.png";
+        private const string UpdatedVegetacion2Path = "Assets/Game/Art/Platform/New/Fondos/Vegetación 2.png";
+        private const string UpdatedVegetacion3Path = "Assets/Game/Art/Platform/New/Fondos/Vegetación 3.png";
+        private const string UpdatedVegetacion4Path = "Assets/Game/Art/Platform/New/Fondos/Vegetación 4.png";
+        private const string UpdatedVegetacion5Path = "Assets/Game/Art/Platform/New/Fondos/Vegetación 5.png";
+        private const string FondoArbolPath = "Assets/Game/Art/Platform/New/Fondos/fondo arbol.png";
+        private const string FondoArbol2Path = "Assets/Game/Art/Platform/New/Fondos/fondo arbol2.png";
+        private const string FondoRocaPath = "Assets/Game/Art/Platform/New/Fondos/fondo roca.png";
+        private const string FondoRoca2Path = "Assets/Game/Art/Platform/New/Fondos/fondo roca 2.png";
+        private const string FondoVegetacionPath = "Assets/Game/Art/Platform/New/Fondos/fondo vegetacion 3.png";
         private const string Vegetacion1Path = "Assets/Game/Art/Platform/Vegetation/Vegetacion1.png";
         private const string Vegetacion3Path = "Assets/Game/Art/Platform/Vegetation/Vegetacion3.png";
         private const string Vegetacion4Path = "Assets/Game/Art/Platform/Vegetation/Vegetacion4.png";
@@ -54,6 +67,7 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
         [MenuItem("GameJam/Platform Obstacles/Create Default Static Tile Spawner Prefab")]
         public static void CreateDefaultSpawnerPrefab()
         {
+            PlatformContentUpdateTool.ConfigureUpdatedPlatformArt();
             EnsureFolder("Assets/Game/Gameplay", "PlatformObstacles");
             EnsureFolder("Assets/Game/Gameplay/PlatformObstacles", "Prefabs");
 
@@ -65,6 +79,8 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
             PlatformStaticTileSpawnZone wood = CreateZone(root.transform, "Zona - Troncos", new Vector3(9.5f, 0f, 0f), new Vector2(8f, 2.2f));
             PlatformStaticTileSpawnZone trees = CreateZone(root.transform, "Zona - Arboles Secos", new Vector3(0f, 4f, 0f), new Vector2(12f, 3.2f));
             PlatformStaticTileSpawnZone vegetation = CreateZone(root.transform, "Zona - Vegetacion", new Vector3(9.5f, 4f, 0f), new Vector2(12f, 3.4f));
+            PlatformStaticTileSpawnZone water = CreateZone(root.transform, "Zona - Charcos", new Vector3(-9.5f, 7.5f, 0f), new Vector2(10f, 3f));
+            PlatformStaticTileSpawnZone background = CreateZone(root.transform, "Zona - Tiles Fondo", new Vector3(4f, 8f, 0f), new Vector2(20f, 5f));
 
             spawner.EditorConfigure(
                 new[]
@@ -73,7 +89,9 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                         "Piedras Chicas",
                         "Obstacles",
                         smallRocks,
-                        LoadSprites(Tiles1Path, "Tiles1_0", "Tiles1_5", "Tiles1_6"),
+                        LoadSprites(
+                            Tiles1Path, "Tiles1_0", "Tiles1_5", "Tiles1_6",
+                            UpdatedPiedraPath, "Platform_Piedra"),
                         10,
                         0.9f,
                         new Vector2(0.85f, 1.15f),
@@ -86,7 +104,10 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                         "Piedras Grandes",
                         "Obstacles",
                         bigRocks,
-                        LoadSprites(Tiles1Path, "Tiles1_1", "Tiles1_2", "Tiles1_3", Tiles2Path, "Tiles2_1"),
+                        LoadSprites(
+                            Tiles1Path, "Tiles1_1", "Tiles1_2", "Tiles1_3",
+                            Tiles2Path, "Tiles2_1",
+                            UpdatedTiles2Path, "Tiles2Nuevos_Wall_01", "Tiles2Nuevos_Wall_02", "Tiles2Nuevos_Wall_03"),
                         5,
                         2.8f,
                         new Vector2(0.85f, 1.1f),
@@ -99,7 +120,10 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                         "Troncos",
                         "Obstacles",
                         wood,
-                        LoadSprites(Tiles2Path, "Tiles2_2"),
+                        LoadSprites(
+                            Tiles2Path, "Tiles2_2",
+                            UpdatedTiles2Path,
+                            "Tiles2Nuevos_Log_01", "Tiles2Nuevos_Log_02", "Tiles2Nuevos_Log_03", "Tiles2Nuevos_Log_04"),
                         4,
                         2.8f,
                         new Vector2(0.9f, 1.1f),
@@ -112,7 +136,10 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                         "Arboles Secos",
                         "Obstacles",
                         trees,
-                        LoadSprites(Tiles2Path, "Tiles2_4", Tiles1Path, "Tiles1_4"),
+                        LoadSprites(
+                            Tiles2Path, "Tiles2_4",
+                            Tiles1Path, "Tiles1_4",
+                            UpdatedTiles2Path, "Tiles2Nuevos_Tree_01", "Tiles2Nuevos_Tree_02", "Tiles2Nuevos_Tree_03"),
                         4,
                         3.2f,
                         new Vector2(0.85f, 1.1f),
@@ -129,7 +156,12 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                             Vegetacion1Path, "Vegetacion1",
                             Vegetacion3Path, "Vegetacion3",
                             Vegetacion4Path, "Vegetacion4",
-                            Vegetacion5Path, "Vegetacion5"),
+                            Vegetacion5Path, "Vegetacion5",
+                            UpdatedVegetacion1Path, "Platform_Vegetacion_1",
+                            UpdatedVegetacion2Path, "Platform_Vegetacion_2",
+                            UpdatedVegetacion3Path, "Platform_Vegetacion_3",
+                            UpdatedVegetacion4Path, "Platform_Vegetacion_4",
+                            UpdatedVegetacion5Path, "Platform_Vegetacion_5"),
                         12,
                         1.6f,
                         new Vector2(0.22f, 0.48f),
@@ -137,7 +169,41 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                         Vector2.zero,
                         new Vector2(-0.08f, 0.08f),
                         0,
-                        GeneratedTileColliderMode.None)
+                        GeneratedTileColliderMode.None,
+                        true),
+                    new PlatformStaticTileSpawner.SpawnGroup(
+                        "Charcos",
+                        "Decoration No Colliders",
+                        water,
+                        LoadSprites(CharcoPath, "Platform_Charco"),
+                        4,
+                        3.5f,
+                        new Vector2(0.35f, 0.6f),
+                        new Vector2(-5f, 5f),
+                        Vector2.zero,
+                        new Vector2(0.04f, 0.08f),
+                        -1,
+                        GeneratedTileColliderMode.None,
+                        true),
+                    new PlatformStaticTileSpawner.SpawnGroup(
+                        "Tiles Fondo",
+                        "Tiles Fondo No Colliders",
+                        background,
+                        LoadSprites(
+                            FondoArbolPath, "Platform_Fondo_Arbol_1",
+                            FondoArbol2Path, "Platform_Fondo_Arbol_2",
+                            FondoRocaPath, "Platform_Fondo_Roca_1",
+                            FondoRoca2Path, "Platform_Fondo_Roca_2",
+                            FondoVegetacionPath, "Platform_Fondo_Vegetacion_1"),
+                        10,
+                        2.4f,
+                        new Vector2(0.45f, 0.85f),
+                        new Vector2(-3f, 3f),
+                        Vector2.zero,
+                        new Vector2(0.12f, 0.2f),
+                        -10,
+                        GeneratedTileColliderMode.None,
+                        true)
                 });
 
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -358,7 +424,7 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
             renderer.sprite = sprite;
             renderer.sortingOrder = group.SortingOrder;
 
-            AddBakedCollider(tile, sprite, group.ColliderMode);
+            AddBakedCollider(tile, sprite, group.EffectiveColliderMode);
 
             return tile;
         }
@@ -387,7 +453,7 @@ namespace GameJam.Gameplay.PlatformObstacles.Editor
                     continue;
 
                 RemoveExistingColliders(tile.gameObject);
-                AddBakedCollider(tile.gameObject, renderer.sprite, group.ColliderMode);
+                AddBakedCollider(tile.gameObject, renderer.sprite, group.EffectiveColliderMode);
             }
         }
 

@@ -53,6 +53,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void Awake()
         {
+            HideTestButtons();
             EnsureEventSystem();
 
             if (_hideOnAwake)
@@ -67,6 +68,7 @@ namespace GameJam.Gameplay.Minigames
 
         private void OnEnable()
         {
+            HideTestButtons();
             BindButtons();
         }
 
@@ -304,6 +306,18 @@ namespace GameJam.Gameplay.Minigames
             }
         }
 
+        private void HideTestButtons()
+        {
+            for (int i = 0; i < _minigames.Count; i++)
+            {
+                Button testButton = _minigames[i].TestButton;
+                if (testButton != null)
+                {
+                    testButton.gameObject.SetActive(false);
+                }
+            }
+        }
+
         private void BindButtons()
         {
             if (_buttonsBound)
@@ -316,7 +330,7 @@ namespace GameJam.Gameplay.Minigames
             for (int i = 0; i < _minigames.Count; i++)
             {
                 MinigamePanel panel = _minigames[i];
-                if (panel.TestButton == null)
+                if (panel.TestButton == null || !panel.TestButton.gameObject.activeInHierarchy)
                 {
                     _testButtonActions.Add(null);
                     continue;

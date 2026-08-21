@@ -37,8 +37,8 @@ Material:
     - _ColorMask: 15
     - _EdgeFlutter: 0.09
     - _FadeEnd: 0.92
-    - _FadeStart: 0.48
-    - _MaxAlpha: 1
+    - _FadeStart: 0.816
+    - _MaxAlpha: 0.944
     - _SmokeContrast: 1.35
     - _SmokeScale: 3.2
     - _SmokeStrength: 0.36

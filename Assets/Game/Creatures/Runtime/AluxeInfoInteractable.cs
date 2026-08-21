@@ -16,14 +16,15 @@ namespace GameJam.Creatures
     {
         [Header("Content")]
         [SerializeField] private Sprite _infoCardSprite;
-        [SerializeField] private string _nearbyMessage = "Shh! quieres saber algo?";
+        [SerializeField] private string _nearbyMessage = string.Empty;
 
         [Header("Interaction")]
         [SerializeField] private Transform _player;
         [SerializeField] private bool _autoFindPlayer = true;
         [SerializeField, Min(0.1f)] private float _interactionDistance = 3f;
         [SerializeField] private bool _closeInfoWhenLeavingRange = true;
-        [SerializeField] private bool _showNearbyBubble = true;
+        [SerializeField] private bool _showNearbyBubble;
+        [SerializeField] private bool _showInfoCardOnInteraction = true;
 
         [Header("Pause")]
         [SerializeField] private bool _pauseTimeWhileShowingInfo = true;
@@ -122,10 +123,10 @@ namespace GameJam.Creatures
                 return;
             }
 
-            if (!_isShowingInfo && WasKeyboardInteractPressed())
+            if (_showInfoCardOnInteraction && !_isShowingInfo && WasKeyboardInteractPressed())
                 ShowInfoCard();
 
-            if (!_isShowingInfo && WasPointerPressedOnAluxe())
+            if (_showInfoCardOnInteraction && !_isShowingInfo && WasPointerPressedOnAluxe())
                 ShowInfoCard();
 
             if (_isShowingInfo && WasClosePressed())
@@ -194,6 +195,9 @@ namespace GameJam.Creatures
             if (string.IsNullOrWhiteSpace(message))
                 message = _nearbyMessage;
 
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
             if (_bubbleCanvas == null)
                 CreateBubble();
 
@@ -208,9 +212,17 @@ namespace GameJam.Creatures
                 _temporaryBubbleRoutine = StartCoroutine(ClearTemporaryBubbleMessageAfter(duration));
         }
 
+        public bool IsPlayerInInteractionRange()
+        {
+            if (_player == null && _autoFindPlayer)
+                ResolvePlayer();
+
+            return IsPlayerNearby();
+        }
+
         private void OnActionPressed(GameJam.Input.GameAction action)
         {
-            if (action == GameJam.Input.GameAction.Interact && _isNearby)
+            if (_showInfoCardOnInteraction && action == GameJam.Input.GameAction.Interact && _isNearby)
                 ShowInfoCard();
         }
 

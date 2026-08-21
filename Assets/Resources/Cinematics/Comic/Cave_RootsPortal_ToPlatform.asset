@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameJam.UI.ComicCinematicAsset
   _defaultPage: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
   _shots:
-  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: af38d4acf2a6a4603b7850b06e7fa3a5, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: -0.35
@@ -29,7 +29,7 @@ MonoBehaviour:
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: af38d4acf2a6a4603b7850b06e7fa3a5, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: -0.29
@@ -44,7 +44,7 @@ MonoBehaviour:
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: 2c2254be48f94f3aa374894016fb754a, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: af38d4acf2a6a4603b7850b06e7fa3a5, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: 0.07
@@ -59,7 +59,7 @@ MonoBehaviour:
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: 5f6a153d6ab2d4ddeb9e658c9477efee, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: -0.31
@@ -74,7 +74,7 @@ MonoBehaviour:
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: 5f6a153d6ab2d4ddeb9e658c9477efee, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: 0.29
@@ -84,12 +84,12 @@ MonoBehaviour:
     _zoomOffset: {x: 0, y: 0}
     _moveDuration: 0
     _holdDuration: 0
-    _zoom: 2.2
+    _zoom: 1.9
     _fadeThroughBlackDuration: 0
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: 5f6a153d6ab2d4ddeb9e658c9477efee, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: -0.28
@@ -99,12 +99,12 @@ MonoBehaviour:
     _zoomOffset: {x: 0, y: 0}
     _moveDuration: 0
     _holdDuration: 0
-    _zoom: 2.2
+    _zoom: 1.9
     _fadeThroughBlackDuration: 0
     _transition: 0
     _ease: 1
     _advanceMode: 2
-  - _pageOverride: {fileID: 21300000, guid: e6d5183adcf641108f295ac605f9f12d, type: 3}
+  - _pageOverride: {fileID: 21300000, guid: 5f6a153d6ab2d4ddeb9e658c9477efee, type: 3}
     _normalizedFocus:
       serializedVersion: 2
       x: 0.29
@@ -204,7 +204,7 @@ MonoBehaviour:
     _zoomOffset: {x: 0, y: 0}
     _moveDuration: 2
     _holdDuration: 0
-    _zoom: 1.8
+    _zoom: 1.75
     _fadeThroughBlackDuration: 0
     _transition: 0
     _ease: 1

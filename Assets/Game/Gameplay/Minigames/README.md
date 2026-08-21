@@ -26,8 +26,8 @@ El preview crea circulos UI sobre cada target, no bloquea raycasts, y con `Previ
 Usa `MeasurementMinigame` y llena el arreglo `Questions`.
 
 Cada pregunta permite configurar:
-- Tipo de medicion: longitud, ancho, profundidad, diametro, angulo, conteo o custom.
-- Herramienta requerida: cinta lineal, angulo, circunferencia o custom.
+- Tipo de medicion: longitud, ancho, profundidad, diametro, circunferencia, conteo o custom.
+- Herramienta requerida: cinta lineal o circunferencia.
 - Tipo de respuesta: numero o texto.
 - Respuesta correcta y tolerancia numerica.
 - Unidad visible.
@@ -36,7 +36,6 @@ Cada pregunta permite configurar:
 El `MeasurementToolSwitcher` permite alternar herramientas desde botones del prefab.
 La plantilla incluye:
 - `UIMeasurementTape`: cinta lineal para longitud, altura, anchura, profundidad o diametro.
-- `UIAngleMeasurementTool`: vertex y dos brazos arrastrables para medir angulos in situ.
 - `UICircumferenceMeasurementTool`: dos manijas de diametro que estiman circunferencia como pi por diametro.
 
 El prefab separa el flujo en dos paginas dentro de `MeasurementMinigame`:
@@ -54,8 +53,19 @@ Ese componente guarda:
 - Si la respuesta fue correcta, el valor esperado y el numero de intento.
 
 Agrega tambien `MinigameInteractableObject` si quieres abrir el canvas desde ese objeto.
-Configura `Minigame Id` con el mismo id que tenga el panel en `MinigamePopupCanvas`, por ejemplo `measurement` o `drag-drop`.
+Configura `Minigame Id` con el mismo id que tenga el panel en `MinigamePopupCanvas`, por ejemplo `measurement` o `drag_drop`.
 Cuando se llame `OpenMinigame()`, el canvas abre ese panel y los minijuegos guardan sus respuestas en el `MinigameObjectState` del objeto.
+
+## Cajas de huesos drag and drop
+
+Prefabs editables:
+- `BoneMeasurements/Prefabs/MinigamePopupCanvas_PrimeraCostilla.prefab`
+- `BoneMeasurements/Prefabs/MinigamePopupCanvas_Sacro.prefab`
+- `BoneMeasurements/Prefabs/MinigamePopupCanvas_Humero.prefab`
+
+En cada prefab, ajusta las zonas bajo `Zonas de entrega (EDITAR AQUI)` y el hueso inicial bajo `Hueso arrastrable (EDITAR AQUI)`.
+Costilla usa el target izquierdo y Sacro el derecho. `BonePlacementDropState` consulta el progreso compartido y muestra automaticamente el otro hueso si ya fue guardado.
+Humero usa la silueta superior de la caja de huesos rectos en `Correciones_Final`; la silueta inferior queda como referencia persistente para el Femur.
 
 ## Destello de interactuable
 

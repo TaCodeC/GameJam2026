@@ -118,7 +118,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._prompt
-      value: Estima la circunferencia visible del craneo usando su diametro.
+      value: Estima la circunferencia visible del craneo usando su radio.
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._toolType
@@ -126,7 +126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._expectedNumber
-      value: 17
+      value: 37
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._measurementKind
@@ -134,7 +134,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._numberTolerance
-      value: 2
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

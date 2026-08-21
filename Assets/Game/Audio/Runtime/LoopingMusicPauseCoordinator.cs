@@ -14,6 +14,9 @@ namespace GameJam.Audio
 
             public AudioSource Source { get; }
             public int HoldCount { get; set; }
+            public bool WasPlaying { get; set; }
+            public bool WasMuted { get; set; }
+            public bool StartOnRelease { get; set; }
         }
 
         private static readonly Dictionary<AudioSource, PauseRecord> s_recordsBySource = new();
@@ -27,10 +30,39 @@ namespace GameJam.Audio
             CleanupDeadSources();
 
             List<AudioSource> ownedSources = new();
+            s_sourcesByOwner.Add(owner, ownedSources);
+            HoldNewSources(ownedSources, exemptSource);
+        }
+
+        public static void RefreshFor(object owner, AudioSource exemptSource)
+        {
+            if (owner == null)
+                return;
+
+            CleanupDeadSources();
+
+            if (!s_sourcesByOwner.TryGetValue(owner, out List<AudioSource> ownedSources))
+            {
+                ownedSources = new List<AudioSource>();
+                s_sourcesByOwner.Add(owner, ownedSources);
+            }
+
+            HoldNewSources(ownedSources, exemptSource);
+        }
+
+        private static void HoldNewSources(List<AudioSource> ownedSources, AudioSource exemptSource)
+        {
+            for (int i = 0; i < ownedSources.Count; i++)
+            {
+                AudioSource ownedSource = ownedSources[i];
+                if (ownedSource != null && ownedSource != exemptSource)
+                    ownedSource.mute = true;
+            }
+
             foreach (PauseRecord record in s_recordsBySource.Values)
             {
                 AudioSource source = record.Source;
-                if (source == null || source == exemptSource)
+                if (source == null || source == exemptSource || ownedSources.Contains(source))
                     continue;
 
                 record.HoldCount++;
@@ -44,7 +76,6 @@ namespace GameJam.Audio
                 if (source == null
                     || source == exemptSource
                     || !source.loop
-                    || !source.isPlaying
                     || s_recordsBySource.ContainsKey(source))
                 {
                     continue;
@@ -52,15 +83,19 @@ namespace GameJam.Audio
 
                 PauseRecord record = new(source)
                 {
-                    HoldCount = 1
+                    HoldCount = 1,
+                    WasPlaying = source.isPlaying,
+                    WasMuted = source.mute,
+                    StartOnRelease = source.isPlaying || source.playOnAwake
                 };
 
-                source.Pause();
+                source.mute = true;
+                if (record.WasPlaying)
+                    source.Pause();
+
                 s_recordsBySource.Add(source, record);
                 ownedSources.Add(source);
             }
-
-            s_sourcesByOwner.Add(owner, ownedSources);
         }
 
         public static void ReleaseFor(object owner)
@@ -79,7 +114,11 @@ namespace GameJam.Audio
                     continue;
 
                 s_recordsBySource.Remove(source);
-                source.UnPause();
+                source.mute = record.WasMuted;
+                if (record.WasPlaying)
+                    source.UnPause();
+                else if (record.StartOnRelease && !source.isPlaying)
+                    source.Play();
             }
 
             CleanupDeadSources();

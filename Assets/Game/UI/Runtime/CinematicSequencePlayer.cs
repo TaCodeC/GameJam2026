@@ -126,6 +126,14 @@ namespace GameJam.UI
             _hasImmediateCover = true;
         }
 
+        public IEnumerator FadeToBlackRoutine(float duration)
+        {
+            BuildCanvas();
+            _fadeGroup.gameObject.SetActive(true);
+            _fadeGroup.blocksRaycasts = true;
+            yield return Fade(_fadeGroup, 1f, duration, true);
+        }
+
         public IEnumerator PlayRoutine(
             string[] resourceNames,
             bool weakenUnderwater = false,
@@ -561,14 +569,11 @@ namespace GameJam.UI
             if (!CanReadNavigationInput())
                 return false;
 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                return true;
-
             if (Keyboard.current != null
                 && (Keyboard.current.dKey.wasPressedThisFrame || Keyboard.current.rightArrowKey.wasPressedThisFrame))
                 return true;
 
-            return Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame;
+            return false;
         }
 
         private bool PreviousPressed()

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6100000}
   - component: {fileID: 11400000}
   m_Layer: 0
-  m_Name: Obj_Rama1_Collectible
+  m_Name: Rama1Collectible
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 1e9400bce83fc4dc68db82ba6b310531, type: 3}
+  m_Sprite: {fileID: -1843516628, guid: 6cc83ea5c33ba4d92be74ec7d95e25ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -130,10 +130,10 @@ BoxCollider2D:
   m_Offset: {x: 0, y: -0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 12.54, y: 4.42}
+    newSize: {x: 19.2, y: 10.8}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObjectives.PlatformObjectiveCollectible
   _itemId: Rama1
+  _itemType: 0
   _disableOnCollected: 1
   _visualRoot: {fileID: 100000}
   _objective: {fileID: 0}

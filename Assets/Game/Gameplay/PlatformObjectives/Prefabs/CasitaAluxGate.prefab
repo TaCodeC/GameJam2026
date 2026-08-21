@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: ba53c73b0304e4113b546ede47db65eb, type: 3}
+  m_Sprite: {fileID: -17691952, guid: f44ad8a30a9734eed9b615294142cc22, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -130,10 +130,10 @@ BoxCollider2D:
   m_Offset: {x: 0, y: -0.8}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 17.26, y: 10.01}
+    newSize: {x: 19.2, y: 10.8}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -151,7 +151,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff131faf301f4851af8b0e90c7368921, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObjectives.PlatformAluxHouseGate
-  _requiredItemCount: 5
+  _requiredBranches: 2
+  _requiredPalmLeaves: 2
+  _requiredRocks: 5
+  _requiredSoil: 1
   _counterText: {fileID: 0}
   _requiredAnimalCount: 5
   _animalCounterText: {fileID: 0}
@@ -161,7 +164,16 @@ MonoBehaviour:
   _counterCompleteColor: '#6BFF8F'
   _aluxeMessageTarget: {fileID: 0}
   _autoFindAluxeMessageTarget: 1
-  _missingObjectsMessage: Aún te faltan cosas!
+  _missingObjectsMessage: "A\xFAn te faltan cosas!"
   _missingMessageDuration: 2.5
+  _completeMessage: "Listo! mi amiga Naia me ayud\xF3 a construir"
+  _completeMessageDuration: 3
+  _showCompleteMessageNearAluxe: 1
+  _waitForCompleteMessageBeforeTransition: 1
+  _templeRenderer: {fileID: 2120000}
+  _naiaRoot: {fileID: 0}
+  _autoFindNaia: 1
+  _fadeToCinematicDuration: 3
   _playerTag: Player
   _onlyTriggerTransitionOnce: 1
+  _nextSceneName: END

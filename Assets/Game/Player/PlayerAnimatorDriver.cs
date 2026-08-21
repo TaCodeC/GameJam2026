@@ -21,6 +21,7 @@ namespace GameJam.Player
         [Header("Visuals")]
         [SerializeField] private Transform _visualRoot;
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Vector2 _initialFacing = Vector2.right;
         [SerializeField] private bool _rotateVisualWithMovement = true;
         [SerializeField] private bool _keepVisualUprightWhenFacingLeft = true;
         [SerializeField, Range(0f, 45f)] private float _uprightFlipToleranceDegrees = 18f;
@@ -55,6 +56,8 @@ namespace GameJam.Player
 
             if (_spriteRenderer != null)
                 _visualFlipped = _spriteRenderer.flipY;
+
+            ApplyInitialFacing();
         }
 
         private void Update()
@@ -73,7 +76,7 @@ namespace GameJam.Player
 
             if (isMoving)
             {
-                _lastFacing = movement.normalized;
+                _lastFacing = NormalizeFacing(movement);
                 RotateVisualTowards(_lastFacing);
 
                 if (!_rotateVisualWithMovement
@@ -93,7 +96,28 @@ namespace GameJam.Player
             _animator.SetBool(IsMovingHash, isMoving);
         }
 
-        private void RotateVisualTowards(Vector2 direction)
+        private void ApplyInitialFacing()
+        {
+            _lastFacing = NormalizeFacing(_initialFacing);
+            RotateVisualTowards(_lastFacing, true);
+
+            if (!_rotateVisualWithMovement
+                && _flipSpriteWithHorizontalMovement
+                && _spriteRenderer != null
+                && Mathf.Abs(_lastFacing.x) > _movementDeadZone)
+            {
+                _spriteRenderer.flipX = _lastFacing.x < 0f;
+            }
+
+            _animator.SetFloat(SpeedHash, 0f);
+            _animator.SetFloat(MoveXHash, 0f);
+            _animator.SetFloat(MoveYHash, 0f);
+            _animator.SetFloat(FacingXHash, _lastFacing.x);
+            _animator.SetFloat(FacingYHash, _lastFacing.y);
+            _animator.SetBool(IsMovingHash, false);
+        }
+
+        private void RotateVisualTowards(Vector2 direction, bool instant = false)
         {
             if (!_rotateVisualWithMovement || _visualRoot == null)
                 return;
@@ -101,7 +125,7 @@ namespace GameJam.Player
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle);
 
-            if (_rotationDegreesPerSecond <= 0f)
+            if (instant || _rotationDegreesPerSecond <= 0f)
             {
                 _visualRoot.localRotation = targetRotation;
             }
@@ -142,6 +166,11 @@ namespace GameJam.Player
 
             if (_spriteRenderer != null)
                 _spriteRenderer.flipY = flipped;
+        }
+
+        private static Vector2 NormalizeFacing(Vector2 facing)
+        {
+            return facing.sqrMagnitude > 0.0001f ? facing.normalized : Vector2.right;
         }
     }
 }

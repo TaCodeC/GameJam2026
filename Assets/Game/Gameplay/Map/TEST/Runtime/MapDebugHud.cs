@@ -33,7 +33,7 @@ namespace GameJam.Gameplay.Map
 #if ENABLE_LEGACY_INPUT_MANAGER
         [SerializeField] private KeyCode _pcToggleKey = KeyCode.M;
 #endif
-        [SerializeField] private bool _createFallbackOpenButton = true;
+        [SerializeField] private bool _createFallbackOpenButton;
 
         [Header("Button Sprites")]
         [SerializeField] private Sprite _openButtonSprite;

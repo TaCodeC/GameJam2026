@@ -124,7 +124,7 @@ MonoBehaviour:
   _autoFindPlayer: 1
   _interactionDistance: 3
   _openAutomaticallyOnce: 1
-  _closeInfoWhenLeavingRange: 1
+  _closeInfoWhenLeavingRange: 0
   _pauseTimeWhileShowingInfo: 1
   _lockPlayerMovementWhileShowingInfo: 1
   _countsAsObjectiveDiscovery: 1

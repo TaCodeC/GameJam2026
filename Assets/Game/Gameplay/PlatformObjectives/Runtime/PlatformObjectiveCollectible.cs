@@ -3,11 +3,20 @@ using UnityEngine;
 
 namespace GameJam.Gameplay.PlatformObjectives
 {
+    public enum PlatformObjectiveItemType
+    {
+        Branch,
+        PalmLeaf,
+        Rock,
+        Soil
+    }
+
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Collider2D))]
     public sealed class PlatformObjectiveCollectible : MonoBehaviour
     {
         [SerializeField] private string _itemId = "Collectible";
+        [SerializeField] private PlatformObjectiveItemType _itemType;
         [SerializeField] private bool _disableOnCollected = true;
         [SerializeField] private GameObject _visualRoot;
         [SerializeField] private PlatformAluxHouseGate _objective;
@@ -16,6 +25,7 @@ namespace GameJam.Gameplay.PlatformObjectives
         private bool _isCollected;
 
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? gameObject.name : _itemId;
+        public PlatformObjectiveItemType ItemType => _itemType;
         public bool IsCollected => _isCollected;
 
         private void Reset()

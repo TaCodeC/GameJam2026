@@ -107,10 +107,14 @@ PrefabInstance:
     - target: {fileID: 6232381568226237991, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 8d8a2cfebf0be4c29925d2683c3a5c8c, type: 3}
+      objectReference: {fileID: 21300000, guid: 4252627abf2784cd2b0dea710e3458c0, type: 3}
     - target: {fileID: 8219429071317195926, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: m_Name
       value: MinigamePopupCanvas_Clavicula
+      objectReference: {fileID: 0}
+    - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
+      propertyPath: _questions.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._id
@@ -118,23 +122,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._unit
-      value: grados
+      value: cm
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._prompt
-      value: Mide el angulo principal de la curvatura de la clavicula.
+      value: Mide la longitud visible de la clavicula sin moverla.
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._toolType
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._expectedNumber
-      value: 135
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._measurementKind
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._numberTolerance

@@ -84,7 +84,7 @@ MonoBehaviour:
     _zoomOffset: {x: 0, y: 0}
     _moveDuration: 6
     _holdDuration: 0
-    _zoom: 2
+    _zoom: 1.8
     _fadeThroughBlackDuration: 0
     _transition: 0
     _ease: 1

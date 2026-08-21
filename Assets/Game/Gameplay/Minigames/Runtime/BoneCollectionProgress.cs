@@ -23,7 +23,7 @@ namespace GameJam.Gameplay.Minigames
 
         private static BoneCollectionProgress _active;
 
-        private readonly HashSet<int> _completedObjects = new();
+        private readonly HashSet<string> _completedBoneIds = new(System.StringComparer.OrdinalIgnoreCase);
         private bool _allBonesSequenceStarted;
         private int _completedBones;
 
@@ -76,8 +76,11 @@ namespace GameJam.Gameplay.Minigames
 
         public void RegisterCompletedBone(MinigameObjectState objectState)
         {
-            int key = objectState != null ? objectState.GetInstanceID() : _completedObjects.Count + 1;
-            if (!_completedObjects.Add(key))
+            string boneId = objectState != null
+                ? objectState.ObjectId
+                : $"unknown_bone_{_completedBoneIds.Count + 1}";
+
+            if (!_completedBoneIds.Add(boneId))
                 return;
 
             _completedBones++;
@@ -85,6 +88,11 @@ namespace GameJam.Gameplay.Minigames
 
             if (HasAllBones && !_allBonesSequenceStarted)
                 StartCoroutine(AllBonesCollectedRoutine());
+        }
+
+        public bool IsBoneCollected(string boneId)
+        {
+            return !string.IsNullOrWhiteSpace(boneId) && _completedBoneIds.Contains(boneId.Trim());
         }
 
         private IEnumerator AllBonesCollectedRoutine()

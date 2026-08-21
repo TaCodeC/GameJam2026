@@ -26,10 +26,19 @@ public sealed class SceneShortcutCanvas : MonoBehaviour
     [Header("Input")]
     [SerializeField] private bool _createEventSystemIfMissing = true;
 
+    [Header("Debug Visibility")]
+    [SerializeField] private bool _showShortcutButtons;
+
     private bool _buttonsBound;
 
     private void Awake()
     {
+        if (!_showShortcutButtons)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         ResolveReferences();
         EnsureEventSystem();
         UpdateLabels();
@@ -37,6 +46,11 @@ public sealed class SceneShortcutCanvas : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!_showShortcutButtons)
+        {
+            return;
+        }
+
         ResolveReferences();
         BindButtons();
         UpdateLabels();

@@ -5008,6 +5008,7 @@ MonoBehaviour:
   _autoFindGameInput: 1
   _visualRoot: {fileID: 4235624631481595169}
   _spriteRenderer: {fileID: 4842013804611242099}
+  _initialFacing: {x: 1, y: 0}
   _rotateVisualWithMovement: 1
   _keepVisualUprightWhenFacingLeft: 1
   _uprightFlipToleranceDegrees: 18

@@ -23,6 +23,7 @@ namespace GameJam.Gameplay.Minigames.Editor
             RectTransform testButtons = CreatePanel("Test Buttons", root.transform, AnchorPreset.TopRight, new Vector2(-24f, -24f), new Vector2(360f, 52f));
             Button dragButton = CreateButton("Open Drag Drop", testButtons, "Probar drag", new Vector2(-90f, 0f), new Vector2(168f, 44f));
             Button measurementButton = CreateButton("Open Measurement", testButtons, "Probar medicion", new Vector2(-270f, 0f), new Vector2(168f, 44f));
+            testButtons.gameObject.SetActive(false);
 
             RectTransform popupRoot = CreatePanel("Popup Root", root.transform, AnchorPreset.Stretch, Vector2.zero, Vector2.zero);
             CanvasGroup popupGroup = popupRoot.gameObject.AddComponent<CanvasGroup>();
@@ -115,9 +116,8 @@ namespace GameJam.Gameplay.Minigames.Editor
             CreateText("Title", measurementPage, "Medicion in situ", new Vector2(0f, 276f), new Vector2(860f, 52f), 34, TextAlignmentOptions.Center);
 
             RectTransform toolButtons = CreatePanel("Measurement Tool Buttons", measurementPage, AnchorPreset.Center, new Vector2(0f, 176f), new Vector2(620f, 48f));
-            Button tapeButton = CreateButton("Tape Tool Button", toolButtons, "Cinta", new Vector2(-200f, 0f), new Vector2(170f, 42f));
-            Button angleButton = CreateButton("Angle Tool Button", toolButtons, "Angulo", Vector2.zero, new Vector2(170f, 42f));
-            Button circumferenceButton = CreateButton("Circumference Tool Button", toolButtons, "Circunf.", new Vector2(200f, 0f), new Vector2(170f, 42f));
+            Button tapeButton = CreateButton("Tape Tool Button", toolButtons, "Cinta", new Vector2(-100f, 0f), new Vector2(170f, 42f));
+            Button circumferenceButton = CreateButton("Circumference Tool Button", toolButtons, "Circunf.", new Vector2(100f, 0f), new Vector2(170f, 42f));
 
             RectTransform fossil = CreatePanel("Measured Fossil Placeholder", measurementPage, AnchorPreset.Center, new Vector2(0f, 48f), new Vector2(420f, 68f));
             Image fossilImage = fossil.gameObject.AddComponent<Image>();
@@ -126,9 +126,7 @@ namespace GameJam.Gameplay.Minigames.Editor
 
             RectTransform toolWorkspace = CreatePanel("Measurement Tools", measurementPage, AnchorPreset.Center, new Vector2(0f, 18f), new Vector2(760f, 230f));
             UIMeasurementTape tape = CreateMeasurementTape(toolWorkspace);
-            UIAngleMeasurementTool angleTool = CreateAngleMeasurementTool(toolWorkspace);
             UICircumferenceMeasurementTool circumferenceTool = CreateCircumferenceMeasurementTool(toolWorkspace);
-            angleTool.gameObject.SetActive(false);
             circumferenceTool.gameObject.SetActive(false);
 
             Button openNotebook = CreateButton("Open Notebook Button", measurementPage, "Libreta", new Vector2(332f, -226f), new Vector2(170f, 52f));
@@ -146,7 +144,7 @@ namespace GameJam.Gameplay.Minigames.Editor
             Button submit = CreateButton("Submit Button", notebookPaper, "Validar", new Vector2(0f, -78f), new Vector2(170f, 52f));
             Button returnToMeasurement = CreateButton("Return To Measurement Button", notebookPage, "Volver a medir", new Vector2(-300f, -226f), new Vector2(210f, 52f));
 
-            ConfigureMeasurementToolSwitcher(toolSwitcher, tape, angleTool, circumferenceTool, tapeButton, angleButton, circumferenceButton);
+            ConfigureMeasurementToolSwitcher(toolSwitcher, tape, circumferenceTool, tapeButton, circumferenceButton);
 
             SerializedObject serialized = new SerializedObject(minigame);
             serialized.FindProperty("_measurementPageRoot").objectReferenceValue = measurementPage.gameObject;
@@ -162,7 +160,7 @@ namespace GameJam.Gameplay.Minigames.Editor
             serialized.FindProperty("_submitButton").objectReferenceValue = submit;
 
             SerializedProperty questions = serialized.FindProperty("_questions");
-            questions.arraySize = 3;
+            questions.arraySize = 2;
             ConfigureMeasurementQuestion(
                 questions.GetArrayElementAtIndex(0),
                 "longitud_hueso",
@@ -174,19 +172,10 @@ namespace GameJam.Gameplay.Minigames.Editor
                 "cm");
             ConfigureMeasurementQuestion(
                 questions.GetArrayElementAtIndex(1),
-                "angulo_hueso",
-                MeasurementKind.Angle,
-                MeasurementToolType.Angle,
-                "Mide el angulo de inclinacion entre los dos ejes marcados.",
-                35f,
-                3f,
-                "grados");
-            ConfigureMeasurementQuestion(
-                questions.GetArrayElementAtIndex(2),
                 "circunferencia_concrecion",
                 MeasurementKind.Circumference,
                 MeasurementToolType.Circumference,
-                "Estima la circunferencia de una forma redondeada usando su diametro.",
+                "Estima la circunferencia de una forma redondeada usando su radio.",
                 24f,
                 1f,
                 "cm");
@@ -260,7 +249,8 @@ namespace GameJam.Gameplay.Minigames.Editor
             RectTransform diameterLine = CreateToolLine("Diameter Line", tool, new Color(0.93f, 0.71f, 0.23f, 1f));
             RectTransform edgeA = CreateHandle("Diameter Edge A", tool, new Vector2(-125f, 0f));
             RectTransform edgeB = CreateHandle("Diameter Edge B", tool, new Vector2(125f, 0f));
-            TMP_Text readout = CreateText("Circumference Readout", tool, "Diam: 12.5 cm | Circ: 39.3 cm", new Vector2(0f, 78f), new Vector2(390f, 42f), 20, TextAlignmentOptions.Center);
+            edgeA.GetComponent<Image>().color = Color.red;
+            TMP_Text readout = CreateText("Circumference Readout", tool, "Circ: 39.3 cm", new Vector2(0f, 78f), new Vector2(390f, 42f), 20, TextAlignmentOptions.Center);
 
             SerializedObject serialized = new SerializedObject(circumferenceTool);
             serialized.FindProperty("_edgeAHandle").objectReferenceValue = edgeA;
@@ -413,20 +403,17 @@ namespace GameJam.Gameplay.Minigames.Editor
         private static void ConfigureMeasurementToolSwitcher(
             MeasurementToolSwitcher switcher,
             UIMeasurementTape tape,
-            UIAngleMeasurementTool angleTool,
             UICircumferenceMeasurementTool circumferenceTool,
             Button tapeButton,
-            Button angleButton,
             Button circumferenceButton)
         {
             SerializedObject serialized = new SerializedObject(switcher);
             serialized.FindProperty("_defaultTool").enumValueIndex = (int)MeasurementToolType.LinearTape;
 
             SerializedProperty tools = serialized.FindProperty("_tools");
-            tools.arraySize = 3;
+            tools.arraySize = 2;
             ConfigureMeasurementToolBinding(tools.GetArrayElementAtIndex(0), MeasurementToolType.LinearTape, "cinta", tape.gameObject, tapeButton, tape);
-            ConfigureMeasurementToolBinding(tools.GetArrayElementAtIndex(1), MeasurementToolType.Angle, "angulo", angleTool.gameObject, angleButton, angleTool);
-            ConfigureMeasurementToolBinding(tools.GetArrayElementAtIndex(2), MeasurementToolType.Circumference, "circunferencia", circumferenceTool.gameObject, circumferenceButton, circumferenceTool);
+            ConfigureMeasurementToolBinding(tools.GetArrayElementAtIndex(1), MeasurementToolType.Circumference, "circunferencia", circumferenceTool.gameObject, circumferenceButton, circumferenceTool);
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 

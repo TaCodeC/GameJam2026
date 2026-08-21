@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: GameJam.MapDiscovery::GameJam.Gameplay.Map.MapDefinition
   _traversableMask: {fileID: 2800000, guid: 2a053c03560fd447bac5429e56723831, type: 3}
   _maskChannel: 0
-  _walkableThreshold: 0.5
+  _walkableThreshold: 0.58
   _worldPlane: 0
   _worldSize: {x: 158.578, y: 36.204}
   _flipWorldX: 0
   _flipWorldY: 0
-  _discoveryResolution: {x: 512, y: 288}
+  _discoveryResolution: {x: 2048, y: 512}

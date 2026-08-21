@@ -126,6 +126,7 @@ MonoBehaviour:
   _goToPlatformText: Ir a Platformer
   _goToCaveText: Ir a Cueva
   _createEventSystemIfMissing: 1
+  _showShortcutButtons: 0
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0

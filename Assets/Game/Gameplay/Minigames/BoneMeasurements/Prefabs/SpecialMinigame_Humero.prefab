@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: _objectId
       value: humero
       objectReference: {fileID: 0}
+    - target: {fileID: 5700542029097376645, guid: 53f6f0f71b1734d5198dd45163363560, type: 3}
+      propertyPath: _minigameId
+      value: drag_drop
+      objectReference: {fileID: 0}
     - target: {fileID: 5803361839866811531, guid: 53f6f0f71b1734d5198dd45163363560, type: 3}
       propertyPath: m_Name
       value: SpecialMinigame_Humero
@@ -55,6 +59,10 @@ PrefabInstance:
     - target: {fileID: 7215626335250178140, guid: 53f6f0f71b1734d5198dd45163363560, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7289614361234177498, guid: 53f6f0f71b1734d5198dd45163363560, type: 3}
+      propertyPath: _minigameId
+      value: drag_drop
       objectReference: {fileID: 0}
     - target: {fileID: 7289614361234177498, guid: 53f6f0f71b1734d5198dd45163363560, type: 3}
       propertyPath: _popupCanvasPrefab

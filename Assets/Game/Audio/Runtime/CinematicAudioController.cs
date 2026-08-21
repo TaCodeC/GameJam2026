@@ -43,6 +43,15 @@ namespace GameJam.Audio
             EnsureAudioSource();
         }
 
+        private void Update()
+        {
+            if (_playDepth <= 0)
+                return;
+
+            EnsureAudioSource();
+            LoopingMusicPauseCoordinator.RefreshFor(this, _cinematicSource);
+        }
+
         public void BeginCinematicAudio()
         {
             _playDepth++;

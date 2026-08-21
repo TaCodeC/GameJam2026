@@ -126,7 +126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8307751035427145260, guid: a2891bf90bede4cc494b82ecad070767, type: 3}
       propertyPath: _questions.Array.data[0]._numberTolerance
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

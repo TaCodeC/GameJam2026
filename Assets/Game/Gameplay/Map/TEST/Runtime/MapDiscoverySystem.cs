@@ -16,6 +16,8 @@ namespace GameJam.Gameplay.Map
         [SerializeField] private bool _autoFindTrackedTransform = true;
         [SerializeField] private string _trackedTransformObjectName = "Player";
         [SerializeField, Min(0.01f)] private float _revealRadius = 1.25f;
+        [Tooltip("Percentage of the reveal radius used as a soft fade at the edge.")]
+        [SerializeField, Range(0f, 1f)] private float _revealEdgeSoftness = 0.35f;
         [SerializeField, Min(0.01f)] private float _visitedRadius = 0.15f;
         [Tooltip("Maximum distance between paint stamps. Smaller values produce smoother paths.")]
         [SerializeField, Min(0.01f)] private float _stampSpacing = 0.25f;
@@ -297,12 +299,12 @@ namespace GameJam.Gameplay.Map
                 return false;
             }
 
-            bool changed = PaintCircle(_discoveredPixels, uv, _revealRadius, ref _discoveredCellCount);
-            changed |= PaintCircle(_visitedPixels, uv, _visitedRadius, ref _visitedCellCount);
+            bool changed = PaintCircle(_discoveredPixels, uv, _revealRadius, _revealEdgeSoftness, ref _discoveredCellCount);
+            changed |= PaintCircle(_visitedPixels, uv, _visitedRadius, 0f, ref _visitedCellCount);
             return changed;
         }
 
-        private bool PaintCircle(byte[] pixels, Vector2 centerUv, float worldRadius, ref int paintedCellCount)
+        private bool PaintCircle(byte[] pixels, Vector2 centerUv, float worldRadius, float edgeSoftness, ref int paintedCellCount)
         {
             Vector2Int resolution = _definition.DiscoveryResolution;
             Vector2 worldSize = _definition.WorldSize;
@@ -324,7 +326,9 @@ namespace GameJam.Gameplay.Map
                 for (int x = minX; x <= maxX; x++)
                 {
                     float dx = (x - centerX) / radiusX;
-                    if (dx * dx + dy * dy > 1f)
+                    float normalizedDistance = Mathf.Sqrt(dx * dx + dy * dy);
+                    byte newValue = CalculatePaintValue(normalizedDistance, edgeSoftness);
+                    if (newValue == 0)
                     {
                         continue;
                     }
@@ -334,18 +338,47 @@ namespace GameJam.Gameplay.Map
                         (y + 0.5f) / resolution.y);
 
                     int index = y * resolution.x + x;
-                    if (pixels[index] != 0 || !IsWalkableUv(uv))
+                    byte currentValue = pixels[index];
+                    if (currentValue >= newValue || !IsWalkableUv(uv))
                     {
                         continue;
                     }
 
-                    pixels[index] = byte.MaxValue;
-                    paintedCellCount++;
+                    pixels[index] = newValue;
+                    if (currentValue == 0)
+                    {
+                        paintedCellCount++;
+                    }
+
                     changed = true;
                 }
             }
 
             return changed;
+        }
+
+        private static byte CalculatePaintValue(float normalizedDistance, float edgeSoftness)
+        {
+            if (normalizedDistance >= 1f)
+            {
+                return 0;
+            }
+
+            float softness = Mathf.Clamp01(edgeSoftness);
+            if (softness <= 0f)
+            {
+                return byte.MaxValue;
+            }
+
+            float innerRadius = 1f - softness;
+            if (normalizedDistance <= innerRadius)
+            {
+                return byte.MaxValue;
+            }
+
+            float fade = Mathf.InverseLerp(1f, innerRadius, normalizedDistance);
+            float smoothFade = fade * fade * (3f - 2f * fade);
+            return (byte)Mathf.RoundToInt(smoothFade * byte.MaxValue);
         }
 
         private bool TryGetDiscoveryIndex(Vector3 worldPosition, out int index)

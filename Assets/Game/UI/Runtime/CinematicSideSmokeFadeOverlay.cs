@@ -1,8 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.Events;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace GameJam.UI
@@ -42,7 +40,6 @@ namespace GameJam.UI
             if (parent == null)
                 return null;
 
-            EnsureEventSystem();
             GameObject prefab = Resources.Load<GameObject>(PrefabResourcePath);
             if (prefab == null)
             {
@@ -50,28 +47,30 @@ namespace GameJam.UI
                 return null;
             }
 
-            GameObject root = new GameObject(prefab.name, typeof(RectTransform));
-            root.transform.SetParent(parent, false);
-            Stretch(root.GetComponent<RectTransform>());
+            GameObject root = UnityEngine.Object.Instantiate(prefab, parent, false);
+            root.name = prefab.name;
 
-            Transform prefabTransform = prefab.transform;
-            for (int i = 0; i < prefabTransform.childCount; i++)
-            {
-                UnityEngine.Object.Instantiate(prefabTransform.GetChild(i).gameObject, root.transform, false);
-            }
+            if (root.transform is RectTransform rootRect)
+                Stretch(rootRect);
+
+            Canvas canvas = root.GetComponent<Canvas>();
+            if (canvas != null)
+                canvas.overrideSorting = true;
 
             Button nextButton = FindButton(root.transform, NextButtonName);
             Button previousButton = FindButton(root.transform, PreviousButtonName);
             UnityAction nextAction = () => requestNext?.Invoke();
             UnityAction previousAction = () => requestPrevious?.Invoke();
 
-            if (nextButton != null)
-                nextButton.onClick.AddListener(nextAction);
+            ConfigureButton(nextButton, nextAction, NextButtonName, logContext);
+            ConfigureButton(previousButton, previousAction, PreviousButtonName, logContext);
 
-            if (previousButton != null)
-                previousButton.onClick.AddListener(previousAction);
-
-            CinematicSideSmokeFadeOverlay overlay = new(root, nextButton, previousButton, nextAction, previousAction);
+            CinematicSideSmokeFadeOverlay overlay = new(
+                root,
+                nextButton,
+                previousButton,
+                nextAction,
+                previousAction);
             overlay.SetVisible(false);
             return overlay;
         }
@@ -84,14 +83,30 @@ namespace GameJam.UI
 
         public void Dispose()
         {
-            if (_nextButton != null && _nextAction != null)
+            if (_nextButton != null)
                 _nextButton.onClick.RemoveListener(_nextAction);
 
-            if (_previousButton != null && _previousAction != null)
+            if (_previousButton != null)
                 _previousButton.onClick.RemoveListener(_previousAction);
 
             if (_root != null)
                 UnityEngine.Object.Destroy(_root);
+        }
+
+        private static void ConfigureButton(
+            Button button,
+            UnityAction action,
+            string buttonName,
+            UnityEngine.Object logContext)
+        {
+            if (button == null)
+            {
+                Debug.LogWarning($"[Cinematics] El prefab no contiene el boton {buttonName}.", logContext);
+                return;
+            }
+
+            button.interactable = true;
+            button.onClick.AddListener(action);
         }
 
         private static Button FindButton(Transform root, string buttonName)
@@ -115,16 +130,6 @@ namespace GameJam.UI
             rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = Vector2.zero;
             rect.localScale = Vector3.one;
-        }
-
-        private static void EnsureEventSystem()
-        {
-            if (EventSystem.current != null)
-                return;
-
-            GameObject eventSystem = new("EventSystem");
-            eventSystem.AddComponent<EventSystem>();
-            eventSystem.AddComponent<InputSystemUIInputModule>();
         }
     }
 }

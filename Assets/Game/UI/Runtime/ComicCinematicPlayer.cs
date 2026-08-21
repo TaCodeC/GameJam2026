@@ -44,6 +44,7 @@ namespace GameJam.UI
         private bool _isFading;
         private bool _currentPausesGame;
         private bool _cinematicAudioActive;
+        private bool _hasImmediateCover;
 
         public static ComicCinematicPlayer Instance
         {
@@ -134,7 +135,16 @@ namespace GameJam.UI
         public void CoverScreenImmediately()
         {
             BuildCanvas();
+            _hasImmediateCover = true;
             ForceFadeBlack();
+        }
+
+        public IEnumerator FadeToBlackRoutine(float duration)
+        {
+            BuildCanvas();
+            _fadeGroup.gameObject.SetActive(true);
+            _fadeGroup.blocksRaycasts = true;
+            yield return Fade(_fadeGroup, 1f, duration, true);
         }
 
         public IEnumerator PlayResourceRoutine(
@@ -172,6 +182,9 @@ namespace GameJam.UI
             while (_isPlaying)
                 yield return null;
 
+            bool useImmediateCover = _hasImmediateCover;
+            _hasImmediateCover = false;
+
             Debug.Log($"[ComicCinematics] Playing {cinematic.name} ({cinematic.ShotCount} shots).", this);
 
             _isPlaying = true;
@@ -197,6 +210,11 @@ namespace GameJam.UI
             if (cinematic.WeakenUnderwater)
                 WeakenUnderwater();
 
+            if (useImmediateCover)
+                ForceFadeBlack();
+            else
+                yield return Fade(_fadeGroup, 1f, cinematic.InitialFadeDuration, true);
+
             _pageGroup.gameObject.SetActive(true);
             _pageGroup.alpha = 1f;
             _pageGroup.blocksRaycasts = true;
@@ -204,7 +222,6 @@ namespace GameJam.UI
             SetSideFadeVisible(true);
             SetActiveShot(cinematic, shotIndex);
             ApplyPose(CalculatePose(firstPage, firstShot.NormalizedFocus, firstShot.GetZoom(cinematic.DefaultZoom), firstShot.ZoomOffset));
-            ForceFadeBlack();
             yield return Fade(_fadeGroup, 0f, cinematic.InitialFadeDuration, true);
 
             while (shotIndex < cinematic.ShotCount)
@@ -574,13 +591,13 @@ namespace GameJam.UI
 
                 RefreshCurrentShotFromAsset(cinematic, shotIndex);
 
-                bool canUseInput = shot.AdvanceMode != ComicCinematicAdvanceMode.AutoOnly;
-                if (canUseInput && ConsumeNavigationRequest(out NavigationDirection requestedDirection))
+                if (ConsumeNavigationRequest(out NavigationDirection requestedDirection))
                 {
                     _navigationDirection = requestedDirection;
                     yield break;
                 }
 
+                bool canUseInput = shot.AdvanceMode != ComicCinematicAdvanceMode.AutoOnly;
                 if (canUseInput && AdvancePressed())
                 {
                     _navigationDirection = NavigationDirection.Next;
@@ -646,9 +663,6 @@ namespace GameJam.UI
             if (!CanReadNavigationInput())
                 return false;
 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                return true;
-
             if (Keyboard.current != null
                 && (Keyboard.current.dKey.wasPressedThisFrame
                     || Keyboard.current.rightArrowKey.wasPressedThisFrame
@@ -656,7 +670,7 @@ namespace GameJam.UI
                     || Keyboard.current.enterKey.wasPressedThisFrame))
                 return true;
 
-            return Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame;
+            return false;
         }
 
         private bool PreviousPressed()

@@ -15,6 +15,7 @@ namespace GameJam.Gameplay.Minigames
         [SerializeField] private float _pixelsPerUnit = 20f;
         [SerializeField] private string _unit = "cm";
         [SerializeField] private int _decimalPlaces = 1;
+        [SerializeField] private float _readoutClearance = 120f;
         [SerializeField] private bool _refreshEveryFrame;
 
         public float Diameter
@@ -26,7 +27,7 @@ namespace GameJam.Gameplay.Minigames
                     return 0f;
                 }
 
-                return Vector2.Distance(_edgeAHandle.anchoredPosition, _edgeBHandle.anchoredPosition) / _pixelsPerUnit;
+                return GetDiameterPixels() / _pixelsPerUnit;
             }
         }
 
@@ -36,6 +37,7 @@ namespace GameJam.Gameplay.Minigames
         {
             ConfigureHandle(_edgeAHandle);
             ConfigureHandle(_edgeBHandle);
+            ConfigureReadout();
             Refresh();
         }
 
@@ -56,6 +58,7 @@ namespace GameJam.Gameplay.Minigames
         {
             _pixelsPerUnit = Mathf.Max(0.01f, _pixelsPerUnit);
             _decimalPlaces = Mathf.Max(0, _decimalPlaces);
+            _readoutClearance = Mathf.Max(0f, _readoutClearance);
         }
 
         public override void SetUnit(string unit)
@@ -95,6 +98,14 @@ namespace GameJam.Gameplay.Minigames
             drag.Configure(Refresh);
         }
 
+        private void ConfigureReadout()
+        {
+            if (_readout != null)
+            {
+                _readout.raycastTarget = false;
+            }
+        }
+
         private void UpdateDiameterLine()
         {
             if (_diameterLine == null)
@@ -121,12 +132,12 @@ namespace GameJam.Gameplay.Minigames
             }
 
             Vector2 start = _edgeAHandle.anchoredPosition;
-            Vector2 end = _edgeBHandle.anchoredPosition;
-            float diameter = Vector2.Distance(start, end);
+            float diameter = GetDiameterPixels();
 
             RectTransform circleTransform = _circlePreview.RectTransform;
             _circlePreview.gameObject.SetActive(true);
-            circleTransform.anchoredPosition = start + (end - start) * 0.5f;
+            circleTransform.pivot = new Vector2(0.5f, 0.5f);
+            circleTransform.anchoredPosition = start;
             circleTransform.localRotation = Quaternion.identity;
             circleTransform.sizeDelta = Vector2.one * diameter;
             _circlePreview.Refresh();
@@ -140,9 +151,24 @@ namespace GameJam.Gameplay.Minigames
             }
 
             Vector2 start = _edgeAHandle.anchoredPosition;
-            Vector2 end = _edgeBHandle.anchoredPosition;
-            _readout.rectTransform.anchoredPosition = start + (end - start) * 0.5f + new Vector2(0f, 62f);
-            _readout.text = $"Diam: {Diameter.ToString($"F{_decimalPlaces}")} {_unit} | Circ: {CurrentValue.ToString($"F{_decimalPlaces}")} {_unit}";
+            float radius = GetRadiusPixels();
+            _readout.rectTransform.anchoredPosition = start + Vector2.up * (radius + _readoutClearance);
+            _readout.text = $"Circ: {CurrentValue.ToString($"F{_decimalPlaces}")} {_unit}";
+        }
+
+        private float GetRadiusPixels()
+        {
+            if (_edgeAHandle == null || _edgeBHandle == null)
+            {
+                return 0f;
+            }
+
+            return Vector2.Distance(_edgeAHandle.anchoredPosition, _edgeBHandle.anchoredPosition);
+        }
+
+        private float GetDiameterPixels()
+        {
+            return GetRadiusPixels() * 2f;
         }
     }
 }

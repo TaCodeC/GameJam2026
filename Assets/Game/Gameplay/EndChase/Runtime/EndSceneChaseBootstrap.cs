@@ -2,6 +2,7 @@ using System.Collections;
 using GameJam.Audio;
 using GameJam.Gameplay.Map;
 using GameJam.Player;
+using GameJam.Player.Cave;
 using GameJam.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,7 +31,7 @@ namespace GameJam.Gameplay.EndChase
         [SerializeField, Min(0.1f)] private float _captureDistance = 4.25f;
 
         [Header("Scene Transition")]
-        [SerializeField] private string _menuSceneName = "Menu";
+        [SerializeField] private string _creditsSceneName = "Creditos";
 
         private Transform _player;
         private GameObject _looter;
@@ -79,7 +80,7 @@ namespace GameJam.Gameplay.EndChase
                 return;
 
             if (PlanarDistance(_player.position, _looter.transform.position) <= _captureDistance)
-                StartCoroutine(ReturnToMenuRoutine());
+                StartCoroutine(ReturnToCreditsRoutine());
         }
 
         private void InitializeChase()
@@ -92,6 +93,8 @@ namespace GameJam.Gameplay.EndChase
                 Debug.LogWarning("[End Chase] No se encontro el Player en la escena END.", this);
                 return;
             }
+
+            ApplyEndLinternaState(_player);
 
             if (_looter != null)
                 return;
@@ -154,6 +157,43 @@ namespace GameJam.Gameplay.EndChase
             marker.SetColor(_looterMapMarkerColor);
             marker.SetDiameter(_looterMapMarkerDiameter);
             marker.SetVisible(true);
+        }
+
+        private static void ApplyEndLinternaState(Transform player)
+        {
+            if (player == null)
+                return;
+
+            CavePlayerStageTransition transition = player.GetComponent<CavePlayerStageTransition>();
+            if (transition == null)
+                transition = player.GetComponentInChildren<CavePlayerStageTransition>(true);
+
+            if (transition != null)
+            {
+                transition.ApplyTransitionInstantly(null);
+                return;
+            }
+
+            CavePlayerSkinController skinController = player.GetComponent<CavePlayerSkinController>();
+            if (skinController == null)
+                skinController = player.GetComponentInChildren<CavePlayerSkinController>(true);
+
+            if (skinController != null)
+                skinController.SetLinterna();
+
+            SetChildActive(player, "SpotLight_Turbina", false);
+            SetChildActive(player, "SpotLight_Linterna", true);
+        }
+
+        private static void SetChildActive(Transform root, string childName, bool active)
+        {
+            Transform[] children = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < children.Length; i++)
+            {
+                Transform child = children[i];
+                if (child != null && child.name == childName)
+                    child.gameObject.SetActive(active);
+            }
         }
 
         private static void DisableHumanPlayerComponents(GameObject looter)
@@ -243,7 +283,7 @@ namespace GameJam.Gameplay.EndChase
             return null;
         }
 
-        private IEnumerator ReturnToMenuRoutine()
+        private IEnumerator ReturnToCreditsRoutine()
         {
             if (_transitionStarted)
                 yield break;
@@ -262,12 +302,12 @@ namespace GameJam.Gameplay.EndChase
 
             ComicCinematicAsset comicCinematic = Resources.Load<ComicCinematicAsset>(CinematicSequences.EndFinaleComic);
             if (comicCinematic != null)
-                yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic, _menuSceneName);
+                yield return ComicCinematicPlayer.Instance.PlayRoutine(comicCinematic, _creditsSceneName);
             else
                 yield return CinematicSequencePlayer.Instance.PlayRoutine(
                     CinematicSequences.EndFinale,
                     false,
-                    _menuSceneName);
+                    _creditsSceneName);
 
             Destroy(gameObject);
         }

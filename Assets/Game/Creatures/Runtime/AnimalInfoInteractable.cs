@@ -23,7 +23,7 @@ namespace GameJam.Creatures
         [SerializeField] private bool _autoFindPlayer = true;
         [SerializeField, Min(0.1f)] private float _interactionDistance = 3f;
         [SerializeField] private bool _openAutomaticallyOnce = true;
-        [SerializeField] private bool _closeInfoWhenLeavingRange = true;
+        [SerializeField] private bool _closeInfoWhenLeavingRange;
 
         [Header("Pause")]
         [SerializeField] private bool _pauseTimeWhileShowingInfo = true;
@@ -67,22 +67,37 @@ namespace GameJam.Creatures
 
         private void Reset()
         {
-            _clickTarget = GetComponent<Collider2D>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            ResolveClickTarget();
         }
 
         private void Awake()
         {
-            if (_clickTarget == null)
-                _clickTarget = GetComponent<Collider2D>();
-
             if (_spriteRenderer == null)
                 _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+            ResolveClickTarget();
 
             if (_gameInput == null)
                 _gameInput = FindFirstObjectByType<GameJam.Input.GameInput>();
 
             ResolvePlayer();
+        }
+
+        private void ResolveClickTarget()
+        {
+            if (_clickTarget != null)
+                return;
+
+            if (_spriteRenderer != null)
+            {
+                _clickTarget = _spriteRenderer.GetComponent<Collider2D>();
+                if (_clickTarget == null)
+                    _clickTarget = _spriteRenderer.GetComponentInChildren<Collider2D>(true);
+            }
+
+            if (_clickTarget == null)
+                _clickTarget = GetComponentInChildren<Collider2D>(true);
         }
 
         private void OnEnable()
@@ -224,6 +239,20 @@ namespace GameJam.Creatures
         {
             if (_player == null)
                 return false;
+
+            Vector2 playerPosition = _player.position;
+            if (_clickTarget != null && _clickTarget.enabled)
+            {
+                Vector2 closestPoint = _clickTarget.ClosestPoint(playerPosition);
+                return Vector2.Distance(playerPosition, closestPoint) <= _interactionDistance;
+            }
+
+            if (_spriteRenderer != null)
+            {
+                Bounds bounds = _spriteRenderer.bounds;
+                Vector3 closestPoint = bounds.ClosestPoint(_player.position);
+                return Vector2.Distance(playerPosition, closestPoint) <= _interactionDistance;
+            }
 
             return Vector2.Distance(transform.position, _player.position) <= _interactionDistance;
         }

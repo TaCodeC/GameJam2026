@@ -11,6 +11,9 @@ using UnityEngine;
 public static class GitHubPagesWebGLBuild
 {
     private const string OutputDirectory = "build";
+    private const string LoadingBackgroundSourcePath = "BuildAssets/WebGL/loading-background.jpg";
+    private const string LoadingBackgroundFileName = "loading-background.jpg";
+    private const string LoadingScreenStyleId = "gamejam-loading-screen";
 
     [MenuItem("Build/GitHub Pages WebGL")]
     public static void BuildForGitHubPages()
@@ -93,7 +96,9 @@ public static class GitHubPagesWebGLBuild
         }
 
         ValidateUncompressedFiles(buildPath);
+        CopyLoadingBackground(absoluteOutputPath);
         PatchIndex(indexPath);
+        PatchLoadingScreen(indexPath);
         DeletePrecompressedFiles(buildPath);
     }
 
@@ -170,6 +175,69 @@ public static class GitHubPagesWebGLBuild
         );
 
         File.WriteAllText(indexPath, html);
+    }
+
+    private static void PatchLoadingScreen(string indexPath)
+    {
+        var html = File.ReadAllText(indexPath);
+        var stylesheetLink = "    <link rel=\"stylesheet\" href=\"TemplateData/style.css\">\n";
+        var loadingScreenStyle = $@"      <style id=""{LoadingScreenStyleId}"">
+        html, body {{ width: 100%; height: 100%; overflow: hidden; background: #02151d; }}
+        #unity-container {{ background: #02151d url('TemplateData/{LoadingBackgroundFileName}') center center / cover no-repeat; overflow: hidden; }}
+        #unity-canvas {{ background: #02151d; }}
+        #unity-loading-bar {{ position: absolute; inset: 0; left: 0; top: 0; width: 100%; height: 100%; transform: none; display: none; align-items: flex-end; justify-content: center; box-sizing: border-box; padding: 0 0 7%; background: #02151d url('TemplateData/{LoadingBackgroundFileName}') center center / cover no-repeat; opacity: 1; z-index: 2; pointer-events: none; }}
+        #unity-loading-bar.unity-loading-fade-out {{ opacity: 0; transition: opacity 600ms ease; transition-delay: 2200ms; }}
+        #unity-logo {{ display: none; }}
+        #unity-progress-bar-empty {{ width: min(420px, 62%); height: 12px; margin: 0; background: rgba(2, 21, 29, 0.58); border: 1px solid rgba(113, 238, 236, 0.75); border-radius: 999px; box-shadow: 0 0 22px rgba(23, 200, 222, 0.32); overflow: hidden; }}
+        #unity-progress-bar-full {{ width: 0%; height: 100%; margin: 0; background: linear-gradient(90deg, #89ffcb 0%, #43d8e8 56%, #1970f0 100%); border-radius: inherit; transition: width 160ms ease-out; }}
+        #unity-footer {{ position: absolute; right: 12px; bottom: 12px; width: 38px; height: 38px; }}
+        #unity-logo-title-footer, #unity-build-title {{ display: none; }}
+        #unity-fullscreen-button {{ float: none; border-radius: 6px; background-color: rgba(2, 21, 29, 0.42); background-image: url('TemplateData/fullscreen-button.png'); background-repeat: no-repeat; background-position: center; }}
+        .unity-mobile #unity-loading-bar {{ padding-bottom: calc(7% + env(safe-area-inset-bottom)); }}
+        .unity-mobile #unity-progress-bar-empty {{ width: min(420px, 72%); }}
+      </style>
+";
+
+        html = Regex.Replace(
+            html,
+            $@"\n\s*<style id=""{Regex.Escape(LoadingScreenStyleId)}"">[\s\S]*?</style>\s*",
+            "\n"
+        );
+
+        if (html.Contains(stylesheetLink))
+        {
+            html = html.Replace(stylesheetLink, stylesheetLink + loadingScreenStyle);
+        }
+        else
+        {
+            html = html.Replace("  </head>", loadingScreenStyle + "  </head>");
+        }
+
+        html = html.Replace(
+            "      document.querySelector(\"#unity-loading-bar\").style.display = \"block\";",
+            "      var loadingBar = document.querySelector(\"#unity-loading-bar\");\n      loadingBar.style.display = \"flex\";"
+        );
+
+        html = html.Replace(
+            "                document.querySelector(\"#unity-loading-bar\").style.display = \"none\";",
+            "                loadingBar.classList.add(\"unity-loading-fade-out\");\n                setTimeout(() => {\n                  loadingBar.style.display = \"none\";\n                }, 3200);"
+        );
+
+        File.WriteAllText(indexPath, html);
+    }
+
+    private static void CopyLoadingBackground(string outputPath)
+    {
+        var sourcePath = Path.GetFullPath(LoadingBackgroundSourcePath);
+
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException("WebGL loading background was not found.", sourcePath);
+        }
+
+        var templateDataPath = Path.Combine(outputPath, "TemplateData");
+        Directory.CreateDirectory(templateDataPath);
+        File.Copy(sourcePath, Path.Combine(templateDataPath, LoadingBackgroundFileName), true);
     }
 
     private static void DeletePrecompressedFiles(string buildPath)

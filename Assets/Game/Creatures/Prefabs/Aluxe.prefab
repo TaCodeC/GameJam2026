@@ -106,12 +106,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameJam.Creatures.AluxeInfoInteractable
   _infoCardSprite: {fileID: 21300000, guid: 2c79e6c2cce8c4b6a9f78745754c871f, type: 3}
-  _nearbyMessage: Shh! quieres saber algo?
+  _nearbyMessage: 
   _player: {fileID: 0}
   _autoFindPlayer: 1
   _interactionDistance: 3
   _closeInfoWhenLeavingRange: 1
-  _showNearbyBubble: 1
+  _showNearbyBubble: 0
+  _showInfoCardOnInteraction: 1
   _pauseTimeWhileShowingInfo: 1
   _lockPlayerMovementWhileShowingInfo: 1
   _bubbleOffset: {x: 0, y: 4.35, z: 0}

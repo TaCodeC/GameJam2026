@@ -110,6 +110,7 @@ namespace GameJam.Creatures.Editor
             foreach (CreatureDefinition definition in Definitions)
                 BuildCreature(definition);
 
+            PlatformNaiaPrefabBuilder.Build();
             BuildSpriteAtlas();
 
             AssetDatabase.SaveAssets();
@@ -366,9 +367,10 @@ namespace GameJam.Creatures.Editor
 
             SerializedObject serialized = new(interactable);
             serialized.FindProperty("_infoCardSprite").objectReferenceValue = defaultInfoCard;
-            serialized.FindProperty("_nearbyMessage").stringValue = "Shh! quieres saber algo?";
+            serialized.FindProperty("_nearbyMessage").stringValue = string.Empty;
             serialized.FindProperty("_interactionDistance").floatValue = 3f;
             serialized.FindProperty("_closeInfoWhenLeavingRange").boolValue = true;
+            serialized.FindProperty("_showNearbyBubble").boolValue = false;
             serialized.FindProperty("_pauseTimeWhileShowingInfo").boolValue = true;
             serialized.FindProperty("_lockPlayerMovementWhileShowingInfo").boolValue = true;
             serialized.FindProperty("_clickTarget").objectReferenceValue = clickTarget;
@@ -405,7 +407,7 @@ namespace GameJam.Creatures.Editor
             serialized.FindProperty("_firstCardIndex").intValue = 0;
             serialized.FindProperty("_interactionDistance").floatValue = definition.InteractionDistance;
             serialized.FindProperty("_openAutomaticallyOnce").boolValue = true;
-            serialized.FindProperty("_closeInfoWhenLeavingRange").boolValue = true;
+            serialized.FindProperty("_closeInfoWhenLeavingRange").boolValue = false;
             serialized.FindProperty("_pauseTimeWhileShowingInfo").boolValue = true;
             serialized.FindProperty("_lockPlayerMovementWhileShowingInfo").boolValue = true;
             serialized.FindProperty("_clickTarget").objectReferenceValue = clickTarget;

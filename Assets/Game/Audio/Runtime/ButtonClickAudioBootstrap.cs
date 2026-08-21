@@ -10,6 +10,7 @@ namespace GameJam.Audio
     public sealed class ButtonClickAudioBootstrap : MonoBehaviour
     {
         private const float RefreshSeconds = 0.5f;
+        private const string MenuSceneName = "Menu";
 
         private static ButtonClickAudioBootstrap _instance;
         private static bool _sceneHookRegistered;
@@ -81,6 +82,28 @@ namespace GameJam.Audio
             }
         }
 
+        internal static void RecoverMenuMusicAfterUserGesture()
+        {
+            Scene activeScene = SceneManager.GetActiveScene();
+            if (!activeScene.IsValid() || activeScene.name != MenuSceneName)
+                return;
+
+            AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < sources.Length; i++)
+            {
+                AudioSource source = sources[i];
+                if (source == null
+                    || source.gameObject.scene != activeScene
+                    || !source.loop
+                    || source.isPlaying)
+                {
+                    continue;
+                }
+
+                source.Play();
+            }
+        }
+
     }
 
     [DisallowMultipleComponent]
@@ -107,6 +130,7 @@ namespace GameJam.Audio
             if (_button == null || !_button.IsActive() || !_button.IsInteractable())
                 return;
 
+            ButtonClickAudioBootstrap.RecoverMenuMusicAfterUserGesture();
             GameAudioSfx.PlayClick();
         }
     }

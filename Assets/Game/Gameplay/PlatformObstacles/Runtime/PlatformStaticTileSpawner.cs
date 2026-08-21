@@ -54,6 +54,7 @@ namespace GameJam.Gameplay.PlatformObstacles
             [SerializeField] private Vector2 _zOffsetRange = new Vector2(-0.03f, 0.03f);
             [SerializeField] private int _sortingOrder;
             [SerializeField] private GeneratedTileColliderMode _colliderMode = GeneratedTileColliderMode.SpritePhysicsShape;
+            [SerializeField] private bool _excludeFromColliderBake;
 
             public bool Enabled => _enabled;
             public string Label => string.IsNullOrWhiteSpace(_label) ? "Tile Group" : _label;
@@ -71,6 +72,10 @@ namespace GameJam.Gameplay.PlatformObstacles
             public Vector2 ZOffsetRange => _zOffsetRange;
             public int SortingOrder => _sortingOrder;
             public GeneratedTileColliderMode ColliderMode => _colliderMode;
+            public bool ExcludeFromColliderBake => _excludeFromColliderBake || _colliderMode == GeneratedTileColliderMode.None;
+            public GeneratedTileColliderMode EffectiveColliderMode => ExcludeFromColliderBake
+                ? GeneratedTileColliderMode.None
+                : _colliderMode;
 
             public SpawnGroup()
             {
@@ -88,7 +93,8 @@ namespace GameJam.Gameplay.PlatformObstacles
                 Vector2 yOffsetRange,
                 Vector2 zOffsetRange,
                 int sortingOrder,
-                GeneratedTileColliderMode colliderMode)
+                GeneratedTileColliderMode colliderMode,
+                bool excludeFromColliderBake = false)
             {
                 _label = label;
                 _generatedParentName = generatedParentName;
@@ -102,6 +108,7 @@ namespace GameJam.Gameplay.PlatformObstacles
                 _zOffsetRange = zOffsetRange;
                 _sortingOrder = sortingOrder;
                 _colliderMode = colliderMode;
+                _excludeFromColliderBake = excludeFromColliderBake;
             }
 
             public Sprite GetRandomSprite(System.Random random)

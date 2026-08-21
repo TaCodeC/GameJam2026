@@ -44,6 +44,7 @@ public static class SceneShortcutCanvasPrefabBuilder
         serialized.FindProperty("_goToPlatformText").stringValue = "Ir a Platformer";
         serialized.FindProperty("_goToCaveText").stringValue = "Ir a Cueva";
         serialized.FindProperty("_createEventSystemIfMissing").boolValue = true;
+        serialized.FindProperty("_showShortcutButtons").boolValue = false;
         serialized.ApplyModifiedPropertiesWithoutUndo();
 
         PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
