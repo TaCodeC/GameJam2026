@@ -58,12 +58,33 @@
       const params = new URLSearchParams(window.location.search);
       const buildUrl = params.get("src") || "./build/index.html";
       const iframe = document.getElementById("unity-build");
+      const forwardedParamNames = new Set([
+        "device",
+        "platform",
+        "mobile",
+        "dyncontrolsMobile",
+        "mobileControls",
+        "touchControls",
+        "itchio_device",
+      ]);
+
+      function appendForwardedParams(url) {
+        const target = new URL(url, window.location.href);
+
+        params.forEach((value, key) => {
+          if (forwardedParamNames.has(key)) {
+            target.searchParams.set(key, value);
+          }
+        });
+
+        return target.href;
+      }
 
       if (window.location.protocol === "file:") {
         iframe.remove();
         document.body.innerHTML = '<main class="local-help"><p>Para probar este wrapper con iframe, abre <code>http://localhost:8080/</code>. Los navegadores bloquean iframes locales cuando la pagina se abre como <code>file://</code>.</p></main>';
       } else {
-        iframe.src = buildUrl;
+        iframe.src = appendForwardedParams(buildUrl);
       }
     </script>
   </body>

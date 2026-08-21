@@ -1,0 +1,542 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 100001}
+  - component: {fileID: 100002}
+  m_Layer: 0
+  m_Name: PlatformStaticTileSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &100001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 101001}
+  - {fileID: 102001}
+  - {fileID: 103001}
+  - {fileID: 104001}
+  - {fileID: 105001}
+  - {fileID: 7497429111388499836}
+  - {fileID: 7874020758927046120}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &100002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50e3ab611be84813ab92b180557c73ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawner
+  _generatedRootName: Generated Static Tiles
+  _seed: 20260702
+  _useRandomSeed: 0
+  _markGeneratedObjectsStatic: 1
+  _groups:
+  - _enabled: 1
+    _label: Piedras Chicas
+    _generatedParentName: Obstacles
+    _zone: {fileID: 101002}
+    _sprites:
+    - {fileID: -1766138773, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: 1835555863, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: 2002456895, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: -4811836, guid: a99a6626c625a4468b54de995de304d7, type: 3}
+    _count: 10
+    _maxAttemptsPerItem: 30
+    _minSpacing: 0.9
+    _uniformScaleRange: {x: 0.85, y: 1.15}
+    _zRotationRange: {x: -5, y: 5}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: -0.03, y: 0.03}
+    _sortingOrder: 2
+    _colliderMode: 2
+    _excludeFromColliderBake: 0
+  - _enabled: 1
+    _label: Piedras Grandes
+    _generatedParentName: Obstacles
+    _zone: {fileID: 102002}
+    _sprites:
+    - {fileID: -1128051109, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: -1558803129, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: 564947964, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: 1430279796, guid: 8456fdedea492436990dc6edb2978773, type: 3}
+    - {fileID: -1443853420, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: -590033711, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: -1816956336, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    _count: 5
+    _maxAttemptsPerItem: 30
+    _minSpacing: 2.8
+    _uniformScaleRange: {x: 0.85, y: 1.1}
+    _zRotationRange: {x: -3, y: 3}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: -0.03, y: 0.03}
+    _sortingOrder: 2
+    _colliderMode: 2
+    _excludeFromColliderBake: 0
+  - _enabled: 1
+    _label: Troncos
+    _generatedParentName: Obstacles
+    _zone: {fileID: 103002}
+    _sprites:
+    - {fileID: 1223601435, guid: 8456fdedea492436990dc6edb2978773, type: 3}
+    - {fileID: -71490066, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: 1814781508, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: -1975367423, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: 1759253378, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    _count: 4
+    _maxAttemptsPerItem: 30
+    _minSpacing: 2.8
+    _uniformScaleRange: {x: 0.9, y: 1.1}
+    _zRotationRange: {x: -4, y: 4}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: -0.03, y: 0.03}
+    _sortingOrder: 3
+    _colliderMode: 2
+    _excludeFromColliderBake: 0
+  - _enabled: 1
+    _label: Arboles Secos
+    _generatedParentName: Obstacles
+    _zone: {fileID: 104002}
+    _sprites:
+    - {fileID: -597411488, guid: 8456fdedea492436990dc6edb2978773, type: 3}
+    - {fileID: 98070482, guid: 363863958e9ec47aa895abb37023b05e, type: 3}
+    - {fileID: 2119269515, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: -886582081, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    - {fileID: 1992766408, guid: b682fb71baaa34d44be72592f9318063, type: 3}
+    _count: 4
+    _maxAttemptsPerItem: 30
+    _minSpacing: 3.2
+    _uniformScaleRange: {x: 0.85, y: 1.1}
+    _zRotationRange: {x: -2, y: 2}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: -0.03, y: 0.03}
+    _sortingOrder: 1
+    _colliderMode: 2
+    _excludeFromColliderBake: 0
+  - _enabled: 1
+    _label: Vegetacion
+    _generatedParentName: Vegetation No Colliders
+    _zone: {fileID: 105002}
+    _sprites:
+    - {fileID: 21300000, guid: 87bd8fd8e23447c9a150c3bffaf38b83, type: 3}
+    - {fileID: 21300000, guid: b09c9887fcfb4f5684540b6b90745a10, type: 3}
+    - {fileID: 21300000, guid: 1c52c5a106d141278de72e5223502ef3, type: 3}
+    - {fileID: 21300000, guid: ebca221f37514d4582abfc9ba193467f, type: 3}
+    - {fileID: -856872484, guid: 9d20c08429bf34972be1d5816b7e9387, type: 3}
+    - {fileID: 655305213, guid: ace7973ae86ff42afb68d6e1ba6d5d9c, type: 3}
+    - {fileID: 1763300842, guid: 910899b575bb94ff8a83305c16919961, type: 3}
+    - {fileID: -1957660842, guid: 3d7a93d1339c04b78a53865f94a55f52, type: 3}
+    - {fileID: -35797672, guid: c04e6b88bf2ed46219dfed40be912696, type: 3}
+    _count: 12
+    _maxAttemptsPerItem: 30
+    _minSpacing: 1.6
+    _uniformScaleRange: {x: 0.22, y: 0.48}
+    _zRotationRange: {x: -3, y: 3}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: -0.08, y: 0.08}
+    _sortingOrder: 0
+    _colliderMode: 0
+    _excludeFromColliderBake: 1
+  - _enabled: 1
+    _label: Charcos
+    _generatedParentName: Decoration No Colliders
+    _zone: {fileID: 8814817963550389002}
+    _sprites:
+    - {fileID: 376850721, guid: 02287500786df4cc59deb849ba889c0d, type: 3}
+    _count: 4
+    _maxAttemptsPerItem: 30
+    _minSpacing: 3.5
+    _uniformScaleRange: {x: 0.35, y: 0.6}
+    _zRotationRange: {x: -5, y: 5}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: 0.04, y: 0.08}
+    _sortingOrder: -1
+    _colliderMode: 0
+    _excludeFromColliderBake: 1
+  - _enabled: 1
+    _label: Tiles Fondo
+    _generatedParentName: Tiles Fondo No Colliders
+    _zone: {fileID: 5215578574694566085}
+    _sprites:
+    - {fileID: 607181497, guid: 68a8457afc1d3490998d8d350cd7e4b3, type: 3}
+    - {fileID: -2051003267, guid: a73265615612843d68337b619c82466f, type: 3}
+    - {fileID: 932849676, guid: cd8d87b126db940db8e2cb0ef4e5c3fc, type: 3}
+    - {fileID: 1723071568, guid: 15f33036a23404e9cb1fcdf2dcd29c43, type: 3}
+    - {fileID: -313989626, guid: d0e7772dcf99d41cc9ceba0180850f09, type: 3}
+    _count: 10
+    _maxAttemptsPerItem: 30
+    _minSpacing: 2.4
+    _uniformScaleRange: {x: 0.45, y: 0.85}
+    _zRotationRange: {x: -3, y: 3}
+    _yOffsetRange: {x: 0, y: 0}
+    _zOffsetRange: {x: 0.12, y: 0.2}
+    _sortingOrder: -10
+    _colliderMode: 0
+    _excludeFromColliderBake: 1
+--- !u!1 &101000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 101001}
+  - component: {fileID: 101002}
+  m_Layer: 0
+  m_Name: Zona - Piedras Chicas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &101001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &101002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Piedras Chicas
+  _size: {x: 8, y: 2.25}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &102000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 102001}
+  - component: {fileID: 102002}
+  m_Layer: 0
+  m_Name: Zona - Piedras Grandes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &102001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 102000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &102002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 102000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Piedras Grandes
+  _size: {x: 9, y: 2.6}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &103000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 103001}
+  - component: {fileID: 103002}
+  m_Layer: 0
+  m_Name: Zona - Troncos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &103001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &103002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Troncos
+  _size: {x: 8, y: 2.2}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &104000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 104001}
+  - component: {fileID: 104002}
+  m_Layer: 0
+  m_Name: Zona - Arboles Secos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &104001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &104002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Arboles Secos
+  _size: {x: 12, y: 3.2}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &105000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 105001}
+  - component: {fileID: 105002}
+  m_Layer: 0
+  m_Name: Zona - Vegetacion
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &105001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 105000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.5, y: 4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &105002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 105000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Vegetacion
+  _size: {x: 12, y: 3.4}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &3234336543434678556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7874020758927046120}
+  - component: {fileID: 5215578574694566085}
+  m_Layer: 0
+  m_Name: Zona - Tiles Fondo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7874020758927046120
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3234336543434678556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4, y: 8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5215578574694566085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3234336543434678556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Tiles Fondo
+  _size: {x: 20, y: 5}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1
+--- !u!1 &4282990020041627258
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7497429111388499836}
+  - component: {fileID: 8814817963550389002}
+  m_Layer: 0
+  m_Name: Zona - Charcos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7497429111388499836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4282990020041627258}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.5, y: 7.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8814817963550389002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4282990020041627258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c9848044e148ffb91cf2df40c6c1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameJam.Gameplay.PlatformObstacles.PlatformStaticTileSpawnZone
+  _label: Charcos
+  _size: {x: 10, y: 3}
+  _fillColor: {r: 1, g: 0, b: 0, a: 0.14}
+  _outlineColor: {r: 1, g: 0, b: 0, a: 0.9}
+  _drawAlways: 1

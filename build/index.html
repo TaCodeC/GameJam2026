@@ -6,6 +6,23 @@
     <title>Unity Web Player | GameJam2026</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+      <style id="gamejam-loading-screen">
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #02151d; }
+        #unity-container { background: #02151d url('TemplateData/loading-background.jpg') center center / cover no-repeat; overflow: hidden; }
+        #unity-canvas { background: #02151d; }
+        #unity-loading-bar { position: absolute; inset: 0; left: 0; top: 0; width: 100%; height: 100%; transform: none; display: none; align-items: flex-end; justify-content: center; box-sizing: border-box; padding: 0 0 7%; background: #02151d url('TemplateData/loading-background.jpg') center center / cover no-repeat; opacity: 1; z-index: 2; pointer-events: none; }
+        #unity-loading-bar.unity-loading-fade-out { opacity: 0; transition: opacity 600ms ease; transition-delay: 2200ms; }
+        #unity-logo { display: none; }
+        #unity-progress-bar-empty { width: min(420px, 62%); height: 12px; margin: 0; background: rgba(2, 21, 29, 0.58); border: 1px solid rgba(113, 238, 236, 0.75); border-radius: 999px; box-shadow: 0 0 22px rgba(23, 200, 222, 0.32); overflow: hidden; }
+        #unity-progress-bar-full { width: 0%; height: 100%; margin: 0; background: linear-gradient(90deg, #89ffcb 0%, #43d8e8 56%, #1970f0 100%); border-radius: inherit; transition: width 160ms ease-out; }
+        #unity-footer { position: absolute; right: 12px; bottom: 12px; width: 38px; height: 38px; }
+        #unity-logo-title-footer, #unity-build-title { display: none; }
+        #unity-fullscreen-button { float: none; border-radius: 6px; background-color: rgba(2, 21, 29, 0.42); background-image: url('TemplateData/fullscreen-button.png'); background-repeat: no-repeat; background-position: center; }
+        .unity-mobile #unity-loading-bar { padding-bottom: calc(7% + env(safe-area-inset-bottom)); }
+        .unity-mobile #unity-progress-bar-empty { width: min(420px, 72%); }
+      </style>
+    <link rel="stylesheet" href="TemplateData/diagnostics.css">
+    <script src="TemplateData/diagnostics.js"></script>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -20,6 +37,7 @@
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
+        <img id="diagnostics-icon" src="TemplateData/webmemd-icon.png">
         <div id="unity-build-title">GameJam2026</div>
       </div>
     </div>
@@ -52,7 +70,7 @@
       }
 
       var buildUrl = "Build";
-      var buildVersion = "20260512-171509";
+      var buildVersion = "1786484566";
       var loaderUrl = buildUrl + "/build.loader.js?v=" + buildVersion;
       var config = {
         arguments: [],
@@ -62,7 +80,7 @@
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "GameJam2026",
-        productVersion: "20260512-171509",
+        productVersion: "1786484566",
         showBanner: unityShowBanner,
         // errorHandler: function(err, url, line) {
         //    alert("error " + err + " occurred at line " + line);
@@ -102,6 +120,12 @@
         // performance, uncomment the following line:
         // config.devicePixelRatio = 1;
 
+        // position the diagnostics icon in the corner on the canvas
+        let diagnostics_icon = document.getElementById("diagnostics-icon");
+        diagnostics_icon.style.position = "fixed";
+        diagnostics_icon.style.bottom = "10px";
+        diagnostics_icon.style.right = "0px";
+        canvas.after(diagnostics_icon);
 
       } else {
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
@@ -109,7 +133,8 @@
         canvas.style.height = "600px";
       }
 
-      document.querySelector("#unity-loading-bar").style.display = "block";
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      loadingBar.style.display = "flex";
 
       var script = document.createElement("script");
       script.src = loaderUrl;
@@ -117,7 +142,13 @@
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
+                loadingBar.classList.add("unity-loading-fade-out");
+                setTimeout(() => {
+                  loadingBar.style.display = "none";
+                }, 3200);
+                document.getElementById("diagnostics-icon").onclick = () => {
+                  unityDiagnostics.openDiagnosticsDiv(unityInstance.GetMetricsInfo);
+                };
                 document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
                 };

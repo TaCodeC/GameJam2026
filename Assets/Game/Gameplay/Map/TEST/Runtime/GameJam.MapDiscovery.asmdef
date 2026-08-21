@@ -1,0 +1,19 @@
+{
+    "name": "GameJam.MapDiscovery",
+    "rootNamespace": "GameJam.Gameplay.Map",
+    "references": [
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "DynControls.Runtime",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
